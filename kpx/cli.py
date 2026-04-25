@@ -46,18 +46,25 @@ METHODS_TABLE = [
 ]
 
 
+def _read_input(path: str) -> str:
+    if path == "-":
+        return sys.stdin.read()
+    return Path(path).read_text(encoding="utf-8")
+
+
 def cmd_audit(args) -> int:
-    text = Path(args.file).read_text(encoding="utf-8")
+    text = _read_input(args.file)
     rep = audit(text)
+    label = "<stdin>" if args.file == "-" else args.file
     if args.json:
         print(json.dumps({
-            "file": args.file,
+            "file": label,
             "tokens": rep.tokens,
             "score": rep.score,
             "findings": [vars(f) for f in rep.findings],
         }, ensure_ascii=False, indent=2))
         return 0
-    print(f"file:   {args.file}")
+    print(f"file:   {label}")
     print(f"tokens: {rep.tokens}")
     print(f"score:  {rep.score}/100")
     if not rep.findings:
@@ -70,7 +77,7 @@ def cmd_audit(args) -> int:
 
 
 def cmd_compress(args) -> int:
-    text = Path(args.file).read_text(encoding="utf-8")
+    text = _read_input(args.file)
     methods = args.methods.split(",") if args.methods else None
     out = compress(text, methods=methods)
     before, after = estimate_tokens(text), estimate_tokens(out)
@@ -79,14 +86,18 @@ def cmd_compress(args) -> int:
         print(f"wrote: {args.output}  tokens {before} → {after}  ({_pct(before, after)})")
     else:
         sys.stdout.write(out)
-        print(f"\n# tokens {before} → {after}  ({_pct(before, after)})", file=sys.stderr)
+        if not out.endswith("\n"):
+            sys.stdout.write("\n")
+        print(f"# tokens {before} → {after}  ({_pct(before, after)})", file=sys.stderr)
     return 0
 
 
 def cmd_budget(args) -> int:
-    text = Path(args.file).read_text(encoding="utf-8")
+    text = _read_input(args.file)
     t = estimate_tokens(text)
     fits = fits_window(text, args.window, args.ratio)
+    label = "<stdin>" if args.file == "-" else args.file
+    print(f"file:          {label}")
     print(f"tokens:        {t}")
     print(f"window:        {args.window}")
     print(f"ratio limit:   {args.ratio} → {int(args.window * args.ratio)} tokens")
@@ -124,18 +135,18 @@ def main(argv: list[str] | None = None) -> int:
     sub = p.add_subparsers(dest="cmd", required=True)
 
     a = sub.add_parser("audit", help="audit a prompt against 30 methods")
-    a.add_argument("file")
+    a.add_argument("file", help="path to a text file, or '-' for stdin")
     a.add_argument("--json", action="store_true")
     a.set_defaults(fn=cmd_audit)
 
     c = sub.add_parser("compress", help="apply safe compressions")
-    c.add_argument("file")
+    c.add_argument("file", help="path to a text file, or '-' for stdin")
     c.add_argument("-o", "--output")
     c.add_argument("-m", "--methods", help="comma-separated, e.g. M03,M24,M25")
     c.set_defaults(fn=cmd_compress)
 
     b = sub.add_parser("budget", help="check 50% context-window rule")
-    b.add_argument("file")
+    b.add_argument("file", help="path to a text file, or '-' for stdin")
     b.add_argument("--window", type=int, default=200_000)
     b.add_argument("--ratio", type=float, default=0.5)
     b.set_defaults(fn=cmd_budget)

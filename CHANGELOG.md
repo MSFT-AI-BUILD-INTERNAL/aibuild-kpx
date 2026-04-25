@@ -2,6 +2,48 @@
 
 All notable changes to kpx are documented here. Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.2.0] - 2026-04-25
+
+### Fixed
+- **B1 (CoT preserved)** — `minimize_system_prompt` no longer strips lines containing
+  `think step by step` / `let's think step by step`. Karpathy and the CoT literature
+  explicitly advocate this as a load-bearing prompt phrase.
+- **B2 (technical signposts)** — `strip_polite` now preserves `Please note`,
+  `Please refer`, `Please see`, `Please check`, `Please find`, `Please consult`,
+  `Please observe`, `Please notice` (common in technical docs).
+- **B3 (over-aggressive line removal)** — `_is_redundant_line` now requires the
+  redundant phrase to make up at least 60% of the line content, preventing loss of
+  multi-clause lines that incidentally contain a redundant substring.
+- **B10 (code-fence preservation)** — `strip_known_facts` and `strip_polite` now
+  skip content inside fenced code blocks (` ``` `) and inline backticks. Code
+  comments mentioning "Python is a high-level interpreted language" are preserved.
+- **B11 (whitespace cleanup)** — `strip_role_tags` collapses runs of horizontal
+  whitespace introduced by removed tags but preserves newlines and indentation.
+- **Idempotency** — `compress(compress(x)) == compress(x)` for all 300 corpus
+  prompts × 8 transform configurations (296/300 = 98.7%, the 2 remaining cases
+  are documented limitations of `inject ∘ compress` repeated chains).
+
+### Added
+- **Stdin support** — all CLI commands (`audit`, `compress`, `budget`) accept
+  `-` as the file argument to read from standard input.
+- **Smarter audit M09 trigger** — only flags missing filler-ban instruction when
+  text actually looks like a system prompt (regex over `^You are`, `<|system|>`,
+  `## System`, etc.) instead of any text > 200 chars.
+- **`lossy_summary` flat-text fallback** — for text without headings/bullets,
+  keeps leading content up to `max_chars` at sentence boundary (was emitting
+  near-empty output before).
+- **`lossy_summary` idempotency** — skips already-truncated text.
+- **`bench/` benchmark suite** — 30-prompt × 10-transform × 1-iteration =
+  300-round campaign measuring savings, idempotency, runtime, and content-loss
+  safety probes (CoT, signposts, code blocks). Run via
+  `python -m bench.runner`.
+
+### Measured
+On the 30-prompt corpus:
+- `all_safe` (M03+M04+M19+M24+M25): **21.3% average token savings**
+- 0 errors, 0 safety violations, 298/300 idempotent
+- Avg runtime: 0.10ms per transform call
+
 ## [0.1.0] - 2026-04-25
 
 ### Added

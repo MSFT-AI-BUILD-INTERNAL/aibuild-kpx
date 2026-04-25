@@ -57,8 +57,8 @@ def audit(text: str) -> AuditReport:
             estimated_savings_chars=redundant * 50,
         ))
 
-    # M09 — filler instruction missing
-    if NO_FILLER_INSTRUCTION not in text and ("system" in text.lower() or len(text) > 200):
+    # M09 — filler instruction missing (only flag for system-prompt-like text)
+    if NO_FILLER_INSTRUCTION not in text and _looks_like_system_prompt(text):
         rep.findings.append(Finding(
             "M09", "info",
             "출력 filler 금지 지침 미포함 — kpx.methods.inject_no_filler() 권고.",
@@ -125,3 +125,12 @@ def _count_pattern_hits(text: str, patterns: list[str]) -> int:
     for pat in patterns:
         n += len(re.findall(pat, text))
     return n
+
+
+_SYSTEM_HINTS = re.compile(
+    r"(?im)^(?:#+\s*system|system\s*:|\[system\]|<\|system\|>|you\s+are\s+(?:a|an|the)\b)"
+)
+
+
+def _looks_like_system_prompt(text: str) -> bool:
+    return bool(_SYSTEM_HINTS.search(text or ""))

@@ -26,12 +26,25 @@ KNOWN_FACT_PATTERNS = [
     r"(?i)\bit\s+is\s+well[- ]known\s+that[^,.\n]*[,.]",
 ]
 
+# Fenced code block & inline backticks are protected from all regex transforms.
+_CODE_FENCE_RE = re.compile(r"(```[\s\S]*?```|`[^`\n]+`)")
+
+
+def _apply_outside_code(text: str, fn) -> str:
+    """Apply ``fn(str) -> str`` only to non-code segments."""
+    parts = _CODE_FENCE_RE.split(text)
+    for i in range(0, len(parts), 2):
+        parts[i] = fn(parts[i])
+    return "".join(parts)
+
 
 def strip_known_facts(text: str) -> str:
-    out = text
-    for pat in KNOWN_FACT_PATTERNS:
-        out = re.sub(pat, "", out)
-    return _collapse_blank_lines(out)
+    def _strip(seg: str) -> str:
+        out = seg
+        for pat in KNOWN_FACT_PATTERNS:
+            out = re.sub(pat, "", out)
+        return out
+    return _collapse_blank_lines(_apply_outside_code(text, _strip))
 
 
 # ---------------------------------------------------------------------------
@@ -50,24 +63,33 @@ def minimize_system_prompt(text: str) -> tuple[str, list[str]]:
     return _collapse_blank_lines(cleaned), removed
 
 
+# Note: 'think step by step' is intentionally NOT in this list — Karpathy and
+# the CoT literature explicitly advocate it as a load-bearing prompt.
 _REDUNDANT_PHRASES = (
     "you are a helpful assistant",
-    "you are an ai",
+    "you are an ai assistant",
+    "you are an ai language model",
     "do your best",
-    "think step by step",  # only useful if not already in system; conservative removal
-    "let's think step by step",
-    "please respond",
-    "please provide",
+    "please respond carefully",
+    "please provide a response",
+    "i hope this helps",
 )
 
-
+# A line is redundant only if removing the redundant phrase leaves a trivial
+# remainder (≤ 1 substantive word). This prevents loss of multi-clause lines
+# that happen to start with a stock opener.
 def _is_redundant_line(line: str) -> bool:
     s = line.strip().lower()
-    if not s:
-        return False
     if len(s) < 5:
         return False
-    return any(p in s for p in _REDUNDANT_PHRASES)
+    for p in _REDUNDANT_PHRASES:
+        if p not in s:
+            continue
+        remainder = s.replace(p, " ")
+        words = re.findall(r"[a-z\u3000-\u9fff\uac00-\ud7af]+", remainder)
+        if len(words) <= 1:
+            return True
+    return False
 
 
 # ---------------------------------------------------------------------------
@@ -140,11 +162,29 @@ def _to_markdown_table(data) -> str | None:
 # ---------------------------------------------------------------------------
 # M19 — lossy summary (heuristic, no LLM)
 # ---------------------------------------------------------------------------
+_TRUNCATED_MARK = "…[truncated]"
+
+
 def lossy_summary(text: str, max_chars: int = 2000) -> str:
-    """Extractive: keep headings + first sentence of each paragraph + bullets."""
-    if len(text) <= max_chars:
+    """Extractive: keep headings + first sentence of each paragraph + bullets.
+
+    Idempotent: if the input already ends with the truncation marker, returns
+    it unchanged. For flat unstructured text we keep leading content up to
+    ``max_chars`` at a sentence boundary.
+    """
+    if len(text) <= max_chars or text.rstrip().endswith(_TRUNCATED_MARK):
         return text
     lines = text.splitlines()
+    has_structure = any(
+        line.lstrip().startswith(("#", "- ", "* ", "|")) for line in lines
+    )
+    if not has_structure:
+        head = text[:max_chars]
+        cut = max(head.rfind(". "), head.rfind("。"), head.rfind("\n"))
+        if cut < max_chars * 0.5:
+            cut = max_chars
+        return head[: cut + 1].rstrip() + "\n" + _TRUNCATED_MARK
+
     keep: list[str] = []
     in_para = False
     for line in lines:
@@ -158,21 +198,22 @@ def lossy_summary(text: str, max_chars: int = 2000) -> str:
             in_para = False
             continue
         if not in_para:
-            # first sentence of paragraph
             m = re.match(r"^(.*?[.!?。！？])(\s|$)", s)
             keep.append(line if not m else line[: len(m.group(1))])
             in_para = True
     out = _collapse_blank_lines("\n".join(keep))
     if len(out) > max_chars:
-        out = out[:max_chars].rsplit("\n", 1)[0] + "\n…[truncated]"
+        out = out[:max_chars].rsplit("\n", 1)[0] + "\n" + _TRUNCATED_MARK
     return out
 
 
 # ---------------------------------------------------------------------------
 # M24 — polite filler stripper
 # ---------------------------------------------------------------------------
+# 'Please' is preserved before technical signposts (note/refer/see/check/find/
+# consult/observe/notice) which are common in docs and not polite filler.
 _POLITE_PATTERNS = [
-    r"(?i)\b(?:please|kindly)\s+",
+    r"(?i)\b(?:please|kindly)\s+(?!note\b|refer\b|see\b|check\b|find\b|consult\b|observe\b|notice\b)",
     r"(?i)\bthank\s+you[^.\n]*\.",
     r"(?i)\bthanks\s+(?:in\s+advance|so\s+much)[^.\n]*\.",
     r"(?i)\bI'd\s+(?:like|love)\s+(?:you\s+)?to\s+",
@@ -182,8 +223,13 @@ _POLITE_PATTERNS = [
 
 
 def strip_polite(text: str) -> str:
+    out = _apply_outside_code(text, lambda s: _multi_sub(s, _POLITE_PATTERNS))
+    return _collapse_blank_lines(out)
+
+
+def _multi_sub(text: str, patterns: list[str]) -> str:
     out = text
-    for pat in _POLITE_PATTERNS:
+    for pat in patterns:
         out = re.sub(pat, "", out)
     return out
 
@@ -202,6 +248,10 @@ def strip_role_tags(text: str) -> str:
     out = text
     for pat in _ROLE_TAG_PATTERNS:
         out = re.sub(pat, "", out)
+    # Collapse runs of horizontal whitespace introduced by removed tags, but
+    # preserve newlines and leading indentation.
+    out = re.sub(r"[ \t]{2,}", " ", out)
+    out = re.sub(r"^[ \t]+", "", out, flags=re.M)
     return _collapse_blank_lines(out)
 
 
@@ -209,7 +259,12 @@ def strip_role_tags(text: str) -> str:
 # helpers
 # ---------------------------------------------------------------------------
 def _collapse_blank_lines(text: str) -> str:
-    return re.sub(r"\n{3,}", "\n\n", text).strip() + ("\n" if text.endswith("\n") else "")
+    """Pure normalizer: rstrip each line, collapse 3+ blanks to 2, strip overall.
+
+    Always returns text without trailing newline. Idempotent.
+    """
+    lines = [ln.rstrip() for ln in text.splitlines()]
+    return re.sub(r"\n{3,}", "\n\n", "\n".join(lines)).strip()
 
 
 # Public registry used by audit/compress
