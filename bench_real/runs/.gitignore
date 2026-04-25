@@ -1,0 +1,4 @@
+# bench_real outputs — gitignore everything
+
+*
+!.gitignore

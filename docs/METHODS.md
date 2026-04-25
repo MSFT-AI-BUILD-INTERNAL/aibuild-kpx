@@ -44,7 +44,7 @@ Karpathy's 8 mental-model framings used as tags:
 | M22 | Multi-agent split | F1+F3 | external | orchestrator |
 | M23 | Persona consistency | F7 | manual | combine with M11 |
 | M24 | Strip polite filler | F2 | compress | regex |
-| M25 | Strip duplicated role tags | F2 | compress | regex |
+| M25 | Strip duplicated role tags | F2 | compress | regex · fenced/inline code 보존 (B13 fix, R3) |
 | M26 | Streaming + early termination | F5 | manual | `stop` sequences |
 | M27 | Constrained decoding | F5+F2 | external | outlines/instructor |
 | M28 | Quantization | F1 | external | model side |

@@ -162,3 +162,37 @@ def test_cli_budget_stdin():
     assert r.returncode == 0
     assert "tokens:" in r.stdout
     assert "fits 50% rule" in r.stdout
+
+
+# ---- B13: M25 must NOT strip indentation inside code blocks -----------------
+def test_strip_role_tags_preserves_code_indentation():
+    src = (
+        "Helper.\n"
+        "```python\n"
+        "def add(a: int, b: int) -> int:\n"
+        "    \"\"\"docstring\"\"\"\n"
+        "    return a + b\n"
+        "```\n"
+        "End.\n"
+    )
+    out = strip_role_tags(src)
+    # the indented body must survive byte-exact inside the fence
+    assert "    \"\"\"docstring\"\"\"" in out
+    assert "    return a + b" in out
+
+
+def test_compress_all_safe_preserves_code_block_byte_exact():
+    body = (
+        "def add(a: int, b: int) -> int:\n"
+        "    \"\"\"Return the sum of a and b.\"\"\"\n"
+        "    return a + b\n"
+    )
+    src = (
+        "You are a helpful AI assistant. Please be concise. Thank you.\n"
+        "Follow the pattern below — do not deviate:\n"
+        "```python\n" + body + "```\n"
+        "Please preserve the function signature exactly. Thank you.\n"
+    )
+    out = compress(src)
+    # body must appear verbatim in the output (fence content unchanged)
+    assert body in out, f"code block was mutated:\n---\n{out}\n---"

@@ -1,0 +1,829 @@
+<!doctype html>
+<html lang="ko">
+<meta charset="utf-8">
+<title>kpx 벤치마크 — 수행 방법과 결과</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  :root {
+    --bg:#0b0d10; --panel:#13161b; --panel2:#181c22; --line:#23272f;
+    --fg:#e8e8e8; --mut:#9aa3ad; --dim:#6b7178;
+    --ok:#3fb950; --warn:#d29922; --bad:#f85149; --acc:#79c0ff; --acc2:#d2a8ff;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg);
+         font:15px/1.65 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",
+              "Helvetica Neue","Apple SD Gothic Neo","Malgun Gothic",sans-serif; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 56px 28px 96px; }
+  header { border-bottom:1px solid var(--line); padding-bottom:28px; margin-bottom:36px; }
+  h1 { margin:0 0 8px; font-size:30px; letter-spacing:-0.01em; }
+  .sub { color:var(--mut); font-size:14px; }
+  .pillrow { margin-top:14px; display:flex; flex-wrap:wrap; gap:8px; }
+  .pill { font-size:11px; padding:4px 10px; border-radius:999px;
+          background:#15181c; color:var(--mut); border:1px solid var(--line); }
+  .pill.ok   { color:var(--ok);   border-color:#1b4126; }
+  .pill.acc  { color:var(--acc);  border-color:#1f3a52; }
+  .pill.warn { color:var(--warn); border-color:#4a371a; }
+
+  section { margin-top:48px; }
+  h2 { font-size:22px; margin:0 0 6px; display:flex; align-items:baseline; gap:12px; }
+  h2 .num { color:var(--dim); font-size:13px; font-variant-numeric:tabular-nums;
+            letter-spacing:0.04em; }
+  h3 { font-size:16px; margin:24px 0 8px; color:var(--fg); }
+  h4 { font-size:14px; margin:18px 0 6px; color:var(--mut); font-weight:600;
+       letter-spacing:0.04em; text-transform:uppercase; }
+  p { color:#dadde0; }
+  .lead { color:var(--mut); font-size:14px; margin:0 0 18px; }
+  code { background:#1a1e24; padding:2px 6px; border-radius:4px;
+         font:13px/1.4 ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+         color:#e6edf3; }
+  pre { background:#0e1116; border:1px solid var(--line); border-radius:8px;
+        padding:14px 16px; overflow:auto; font:12.5px/1.55 ui-monospace,Menlo,monospace;
+        color:#cdd9e5; }
+  pre code { background:transparent; padding:0; }
+
+  .panel { background:var(--panel); border:1px solid var(--line);
+           border-radius:10px; padding:18px 20px; margin:14px 0; }
+  .panel.tight { padding:12px 16px; }
+  .grid { display:grid; gap:14px; }
+  .g2 { grid-template-columns: repeat(2, 1fr); }
+  .g3 { grid-template-columns: repeat(3, 1fr); }
+  .g4 { grid-template-columns: repeat(4, 1fr); }
+  @media (max-width: 760px) {
+    .g2,.g3,.g4 { grid-template-columns: 1fr; }
+  }
+
+  .stat { background:var(--panel); border:1px solid var(--line);
+          border-radius:10px; padding:16px 18px; }
+  .stat .v { font-size:24px; font-weight:600; font-variant-numeric:tabular-nums;
+             letter-spacing:-0.01em; color:var(--fg); }
+  .stat .v.ok  { color:var(--ok);  }
+  .stat .v.acc { color:var(--acc); }
+  .stat .v.bad { color:var(--bad); }
+  .stat .l { color:var(--mut); font-size:12px; margin-top:4px; }
+
+  table { border-collapse:collapse; width:100%; margin:8px 0; font-size:13.5px; }
+  th, td { border:1px solid var(--line); padding:8px 10px; text-align:left;
+           vertical-align:top; }
+  th { background:#15181c; color:var(--mut); font-weight:600;
+       letter-spacing:0.02em; }
+  td.num, th.num { text-align:right; font-variant-numeric:tabular-nums; }
+  tr.hi td { background:#0d2417; }
+  tr.bad td { background:#2a1010; }
+  td.pos { color:var(--ok); }
+  td.neg { color:var(--bad); }
+  td.zero { color:var(--dim); }
+
+  ul.tight, ol.tight { margin:6px 0 6px 20px; padding:0; }
+  ul.tight li, ol.tight li { margin:4px 0; }
+
+  .kbd { background:#1a1e24; border:1px solid #2a313a; border-bottom-width:2px;
+         border-radius:4px; padding:1px 6px; font:12px ui-monospace,Menlo,monospace; }
+
+  .callout { border-left:3px solid var(--acc); padding:10px 14px;
+             background:#0f1419; border-radius:4px; margin:14px 0;
+             color:#cdd6e0; font-size:14px; }
+  .callout.warn { border-left-color:var(--warn); background:#1a1407; }
+  .callout.bad  { border-left-color:var(--bad);  background:#1a0d0d; }
+
+  .legend { color:var(--dim); font-size:12px; margin-top:6px; }
+  hr { border:0; border-top:1px solid var(--line); margin:32px 0; }
+
+  /* simple horizontal bar */
+  .bar { position:relative; height:14px; background:#15181c;
+         border:1px solid var(--line); border-radius:4px; overflow:hidden; }
+  .bar > span { position:absolute; left:0; top:0; bottom:0;
+                background:linear-gradient(90deg,#1f6feb,#79c0ff); }
+  .bar.bad > span { background:linear-gradient(90deg,#7a1d1d,#f85149); }
+  .bar-row { display:grid; grid-template-columns: 130px 1fr 80px;
+             gap:10px; align-items:center; margin:6px 0; font-size:13px; }
+  .bar-row .label { color:var(--mut); }
+  .bar-row .val { text-align:right; font-variant-numeric:tabular-nums; }
+
+  .toc { background:var(--panel); border:1px solid var(--line); border-radius:10px;
+         padding:14px 18px; }
+  .toc ol { margin:6px 0 0 22px; padding:0; color:var(--mut); }
+  .toc a { color:#cdd9e5; text-decoration:none; }
+  .toc a:hover { color:var(--acc); }
+</style>
+
+<body>
+<div class="wrap">
+
+<header>
+  <h1>kpx 벤치마크 — 수행 방법과 결과</h1>
+  <div class="sub">자체 QA(legacy v0.2.0) + 실전 LLM 하너스(bench_real plan v2) + 심층 소스코드 정적 분석 · 2026-04-25</div>
+  <div class="pillrow">
+    <span class="pill acc">3-track</span>
+    <span class="pill ok">300 + 111 + 90 round</span>
+    <span class="pill ok">+21.36% / +20.95% / −8.36% 토큰 절감</span>
+    <span class="pill ok">코드 보존 불변수 100%</span>
+    <span class="pill ok">B13 버그 발견·수정</span>
+    <span class="pill ok">43/43 tests pass</span>
+  </div>
+</header>
+
+<section class="toc">
+  <strong style="color:#cdd9e5">목차</strong>
+  <ol>
+    <li><a href="#why">왜 두 트랙을 운영하는가</a></li>
+    <li><a href="#legacy">트랙 A — 자체 QA 벤치마크 (v0.2.0)</a></li>
+    <li><a href="#realplan">트랙 B — 실전 LLM 벤치마크 (plan v2)</a></li>
+    <li><a href="#methods">측정·점수 산출 방법</a></li>
+    <li><a href="#smoke">스모크 결과 (mock 어댑터)</a></li>
+    <li><a href="#deepcode">심층 분석 — 소스코드 효율성</a></li>
+    <li><a href="#interpret">해석과 의사결정</a></li>
+    <li><a href="#repro">재현 절차</a></li>
+    <li><a href="#limits">한계·다음 단계</a></li>
+  </ol>
+</section>
+
+<!-- ─────────────────────────────────────────────── -->
+<section id="why">
+  <h2><span class="num">01</span>왜 두 트랙을 운영하는가</h2>
+  <p class="lead">
+    "토큰을 줄이는 변환이 안전하다"를 증명하는 두 가지 서로 다른 질문에 답해야 한다:
+  </p>
+
+  <div class="grid g2">
+    <div class="panel">
+      <h3 style="margin-top:0">트랙 A — 변환 자체의 건전성</h3>
+      <p>
+        kpx의 5개 SAFE_TRANSFORMS가 <b>토큰을 정말 줄이는가</b>,
+        <b>멱등(idempotent)인가</b>, <b>signpost·CoT를 깎지 않는가</b>를
+        외부 API 없이 빠르게 검증한다. 30 prompt × 10 transform =
+        <b>300 round</b>를 ~40 ms 안에 돌린다.
+      </p>
+      <div class="legend">위치: <code>bench_real/legacy/</code> · 키 불필요 · 항상 재현 가능</div>
+    </div>
+    <div class="panel">
+      <h3 style="margin-top:0">트랙 B — 실전 LLM 응답 품질</h3>
+      <p>
+        같은 변환이 실제 모델(GPT-5-mini, Claude 4.7) 응답의
+        <b>품질·안전성·다국어 성능</b>을 떨어뜨리지 않는지 측정한다.
+        plan v2의 <b>3-tier ladder($3 / $15 / $60)</b>로 비용을 통제하며
+        6 persona별로 합격 여부를 결정한다.
+      </p>
+      <div class="legend">위치: <code>bench_real/</code> · API 키 필요 · 비용 cap 강제</div>
+    </div>
+  </div>
+
+  <div class="callout">
+    트랙 A가 <b>전제 검증</b>(변환이 망가지지 않았는가),
+    트랙 B가 <b>가치 검증</b>(실제로 돈/품질에 이득인가)을 담당한다.
+    A 없이 B를 돌리면 비용 낭비, B 없이 A만 보면 “토큰만 줄고 답은 나빠지는” 함정에 빠진다.
+  </div>
+</section>
+
+<!-- ─────────────────────────────────────────────── -->
+<section id="legacy">
+  <h2><span class="num">02</span>트랙 A — 자체 QA 벤치마크 (v0.2.0)</h2>
+
+  <h3>코퍼스</h3>
+  <ul class="tight">
+    <li><b>30 prompt = 6 카테고리 × 5 스타일</b></li>
+    <li>카테고리: <code>coding · docs · data · agentic · safety · multilingual</code></li>
+    <li>스타일: <code>polite · verbose · code_block · role_tags · signposts · long_history · clean · …</code></li>
+    <li>각 prompt는 <code>Prompt(id, category, style, text)</code> dataclass로 ID는 <code>P01..P30</code></li>
+  </ul>
+
+  <h3>러너</h3>
+  <ul class="tight">
+    <li>10 변환 구성:
+      <code>none / M03 / M04 / M19 / M24 / M25 / M03+M24 / M04+M25 / all_safe / inject+all</code></li>
+    <li>각 (prompt, transform) 1회 측정 → 총 <b>300 round</b></li>
+    <li>지표: <code>tokens_before/after</code>, <code>savings%</code>, <code>runtime_ms</code>,
+        <code>audit_score_delta</code>, <b>idempotency check</b>, <b>safety probe</b></li>
+    <li>safety probe(5종): <code>step by step</code>, <code>Please note</code>, <code>Please refer</code>,
+        <code>Please see</code>, <code>do not modify</code> → 변환 후 생존 검사</li>
+    <li>출력: <code>bench_real/legacy/results.json</code> + stdout 집계</li>
+  </ul>
+
+  <h3>총괄 결과 (v0.2.0)</h3>
+  <div class="grid g4">
+    <div class="stat"><div class="v acc">300</div><div class="l">총 round</div></div>
+    <div class="stat"><div class="v ok">0</div><div class="l">errors</div></div>
+    <div class="stat"><div class="v ok">0</div><div class="l">safety violations</div></div>
+    <div class="stat"><div class="v ok">2 / 300</div><div class="l">non-idempotent (0.7%)</div></div>
+  </div>
+
+  <h3>변환별 평균 절감율</h3>
+  <div class="panel tight">
+    <div class="bar-row"><span class="label">all_safe</span>
+      <div class="bar"><span style="width:21.36%"></span></div>
+      <span class="val pos" style="color:var(--ok)">+21.36%</span></div>
+    <div class="bar-row"><span class="label">M03 + M24</span>
+      <div class="bar"><span style="width:9.30%"></span></div>
+      <span class="val">+9.30%</span></div>
+    <div class="bar-row"><span class="label">M24</span>
+      <div class="bar"><span style="width:6.07%"></span></div>
+      <span class="val">+6.07%</span></div>
+    <div class="bar-row"><span class="label">M04 + M25</span>
+      <div class="bar"><span style="width:6.04%"></span></div>
+      <span class="val">+6.04%</span></div>
+    <div class="bar-row"><span class="label">M19</span>
+      <div class="bar"><span style="width:6.01%"></span></div>
+      <span class="val">+6.01%</span></div>
+    <div class="bar-row"><span class="label">M25</span>
+      <div class="bar"><span style="width:5.55%"></span></div>
+      <span class="val">+5.55%</span></div>
+    <div class="bar-row"><span class="label">M03</span>
+      <div class="bar"><span style="width:3.31%"></span></div>
+      <span class="val">+3.31%</span></div>
+    <div class="bar-row"><span class="label">M04</span>
+      <div class="bar"><span style="width:0.53%"></span></div>
+      <span class="val">+0.53%</span></div>
+    <div class="bar-row"><span class="label">none</span>
+      <div class="bar"><span style="width:0%"></span></div>
+      <span class="val zero" style="color:var(--dim)">0.00%</span></div>
+    <div class="bar-row"><span class="label">inject + all</span>
+      <div class="bar bad"><span style="width:63.26%"></span></div>
+      <span class="val neg" style="color:var(--bad)">−63.26%</span></div>
+  </div>
+
+  <table>
+    <thead><tr>
+      <th>Transform</th><th class="num">avg savings %</th>
+      <th class="num">avg score Δ</th><th class="num">runtime ms</th>
+      <th class="num">non-idem</th><th class="num">safety</th>
+    </tr></thead>
+    <tbody>
+      <tr class="hi"><td><b>all_safe</b></td><td class="num pos">+21.36</td><td class="num">+1.40</td><td class="num">0.131</td><td class="num">0</td><td class="num">0</td></tr>
+      <tr><td>M03+M24</td><td class="num pos">+9.30</td><td class="num">+0.77</td><td class="num">0.148</td><td class="num">0</td><td class="num">0</td></tr>
+      <tr><td>M24</td><td class="num pos">+6.07</td><td class="num">+0.37</td><td class="num">0.072</td><td class="num">0</td><td class="num">0</td></tr>
+      <tr><td>M04+M25</td><td class="num pos">+6.04</td><td class="num">+0.63</td><td class="num">0.051</td><td class="num">0</td><td class="num">0</td></tr>
+      <tr><td>M19</td><td class="num pos">+6.01</td><td class="num zero">0.00</td><td class="num">0.012</td><td class="num">0</td><td class="num">0</td></tr>
+      <tr><td>M25</td><td class="num pos">+5.55</td><td class="num">+0.47</td><td class="num">0.038</td><td class="num">0</td><td class="num">0</td></tr>
+      <tr><td>M03</td><td class="num pos">+3.31</td><td class="num">+0.40</td><td class="num">0.099</td><td class="num">0</td><td class="num">0</td></tr>
+      <tr><td>M04</td><td class="num pos">+0.53</td><td class="num">+0.17</td><td class="num">0.027</td><td class="num">0</td><td class="num">0</td></tr>
+      <tr><td>none</td><td class="num zero">0.00</td><td class="num zero">0.00</td><td class="num">0.000</td><td class="num">0</td><td class="num">0</td></tr>
+      <tr class="bad"><td><b>inject+all</b></td><td class="num neg">−63.26</td><td class="num">+1.73</td><td class="num">0.149</td><td class="num">2</td><td class="num">0</td></tr>
+    </tbody>
+  </table>
+  <div class="legend">
+    <code>score Δ</code>는 audit 100점 기준 변화량(↑가 좋음). 모든 SAFE 조합은 절감과 audit 향상을 동시에 달성했다.
+  </div>
+
+  <div class="callout">
+    핵심 결정 — <b>기본 체인은 <code>all_safe</code></b>(M03+M04+M19+M24+M25). 토큰 21.36% ↓,
+    audit +1.4점, error/safety 0. <code>inject+all</code>은 시스템 프롬프트가 짧을 때
+    no-filler 한 줄을 추가하면서 비율 −63%로 늘어나므로 <b>긴 프롬프트 전용 옵션</b>으로 분리.
+  </div>
+</section>
+
+<!-- ─────────────────────────────────────────────── -->
+<section id="realplan">
+  <h2><span class="num">03</span>트랙 B — 실전 LLM 벤치마크 (plan v2)</h2>
+
+  <p>
+    트랙 A로 변환의 건전성을 확인했더라도, “실제 모델 응답이 같은가?”는
+    별개의 질문이다. plan v2는 <b>“이 숫자가 누구의 결정을 바꾸는가?”</b>를
+    설계 원칙으로 삼아 6 persona × 7 task × 6 variant 매트릭스를 구성했다.
+  </p>
+
+  <h3>변환 매트릭스 (V0–V5)</h3>
+  <table>
+    <thead><tr><th>Variant</th><th>구성</th><th>역할</th></tr></thead>
+    <tbody>
+      <tr><td>V0</td><td>raw</td><td>대조군(baseline)</td></tr>
+      <tr><td>V1</td><td>M03</td><td>알려진 사실 제거 단독 효과</td></tr>
+      <tr><td>V2</td><td>M24</td><td>politeness 제거 단독 효과</td></tr>
+      <tr><td>V3</td><td>M03 + M24 + M25</td><td>가벼운 조합 (안전 우선)</td></tr>
+      <tr><td>V4</td><td>M03 + M04 + M19 + M24 + M25</td><td><b>all_safe</b> (권장)</td></tr>
+      <tr><td>V5</td><td>V4 + inject_no_filler</td><td>적극적 (긴 프롬프트 전용)</td></tr>
+    </tbody>
+  </table>
+  <div class="legend">
+    모든 변환은 <b>system prompt에만</b> 적용. user 메시지는 그대로 전달
+    (kpx의 실제 작동 범위와 일치).
+  </div>
+
+  <h3>Tier ladder — 비용 통제</h3>
+  <table>
+    <thead><tr>
+      <th>Tier</th><th class="num">Cases</th><th>Variants</th>
+      <th class="num">Repeats</th><th class="num">Tier-2 spot</th>
+      <th>Models</th><th class="num">Budget</th>
+    </tr></thead>
+    <tbody>
+      <tr><td><b>lite</b></td><td class="num">37</td><td>V0, V3, V4</td>
+          <td class="num">1</td><td class="num">0%</td>
+          <td>M-A only</td><td class="num">~$3</td></tr>
+      <tr><td><b>standard</b></td><td class="num">72</td><td>V0..V5</td>
+          <td class="num">3</td><td class="num">20%</td>
+          <td>M-A + M-B</td><td class="num">~$15</td></tr>
+      <tr><td><b>deep</b></td><td class="num">77</td><td>V0..V5</td>
+          <td class="num">5</td><td class="num">20%</td>
+          <td>M-A + M-B + M-C</td><td class="num">~$60</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Task 카탈로그 (Lite=37)</h3>
+  <table>
+    <thead><tr><th>Task</th><th class="num">n</th><th>scorer</th><th>주요 persona</th></tr></thead>
+    <tbody>
+      <tr><td>T01 coding</td><td class="num">10</td>
+          <td>pytest 샌드박스 (subprocess, timeout 5s)</td><td>P1 dev</td></tr>
+      <tr><td>T03 docs</td><td class="num">6</td>
+          <td>ROUGE-L (LCS-기반 F-score)</td><td>P1 dev · P6 i18n</td></tr>
+      <tr><td>T04 json</td><td class="num">6</td>
+          <td>JSON schema 미니 검증기</td><td>P1 dev · P2 exec</td></tr>
+      <tr><td>T06 safety</td><td class="num">10</td>
+          <td>refusal_label (5 refuse + 5 answer)</td><td><b>P3 safety (blocker)</b></td></tr>
+      <tr><td>T07 translation</td><td class="num">5</td>
+          <td>chrF + must_keep terms</td><td>P6 i18n</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Persona별 합격 기준</h3>
+  <table>
+    <thead><tr><th>Persona</th><th>지표</th><th>임계값</th></tr></thead>
+    <tbody>
+      <tr><td>P1 Developer</td><td>task pass-rate vs V0</td><td>Δ ≥ −2 pt</td></tr>
+      <tr><td>P2 Exec</td><td>input-token reduction</td><td>≥ 5% (목표 8%)</td></tr>
+      <tr class="hi"><td><b>P3 Safety</b></td><td>refusal preservation</td><td>Δ ≥ −2 pt <b>(릴리스 blocker)</b></td></tr>
+      <tr><td>P4 Calibration</td><td>kpx vs API mean abs error</td><td>≤ 5%</td></tr>
+      <tr><td>P6 i18n</td><td>per-language Δquality</td><td>Δ ≥ −2 pt for any lang</td></tr>
+    </tbody>
+  </table>
+  <div class="legend">P5는 Standard tier로 보류. P3 단독 미달 시 릴리스 차단.</div>
+</section>
+
+<!-- ─────────────────────────────────────────────── -->
+<section id="methods">
+  <h2><span class="num">04</span>측정·점수 산출 방법</h2>
+
+  <h3>2-tier 채점</h3>
+  <ul class="tight">
+    <li><b>Tier-1 — rule-based</b>: <code>expected.type</code>으로 디스패치
+        (<code>pytest · json_schema · rouge_l · chrf · refusal_label · exact · tool_choice</code>).
+        모든 셀에 적용, 0–100 점.</li>
+    <li><b>Tier-2 — LLM-as-judge</b>: 4 axes × 25점 = 100점 — correctness · completeness ·
+        faithfulness · conciseness. <b>cross-vendor</b>(target=GPT면 judge=Claude).
+        Standard/Deep tier에서 <b>20% spot-check</b>.</li>
+    <li>최종 quality = Tier-1만 있으면 그 값, 둘 다 있으면 0.5 × T1 + 0.5 × T2.</li>
+  </ul>
+
+  <h3>토큰 카운팅 (4종 동시)</h3>
+  <ul class="tight">
+    <li><code>tokens_in_kpx</code> — 휴리스틱 (CJK 1글자 = 1 tok, ASCII ~4글자 = 1 tok)</li>
+    <li><code>tokens_in_tiktoken</code> — 모델별 인코딩 (gpt-4o → o200k_base 등)</li>
+    <li><code>tokens_in_api</code> / <code>tokens_out_api</code> — 응답에서 API가 보고한 실제 값</li>
+  </ul>
+  <p>P4 calibration view가 <code>kpx vs api</code> 절대오차 / 상대오차를 자동 계산한다.</p>
+
+  <h3>안전장치</h3>
+  <div class="grid g2">
+    <div class="panel tight">
+      <h4 style="margin-top:0">CostCap</h4>
+      <p style="margin:0">사전 가격표(<code>PRICES</code>)로 셀별 비용을 누계.
+        <code>--cap-usd N</code> 도달 시 깨끗하게 중단. 같은 <code>--run-id</code>로
+        다시 돌리면 이미 기록된 셀을 건너뛰며 이어 실행.</p>
+    </div>
+    <div class="panel tight">
+      <h4 style="margin-top:0">Code sandbox</h4>
+      <p style="margin:0">T01 답안은 <code>subprocess</code>에 <code>-I -S</code>로 격리
+        실행하고 5초 wall-timeout. 어떤 import도 사용자 시스템을 건드리지 못한다.</p>
+    </div>
+    <div class="panel tight">
+      <h4 style="margin-top:0">결정론</h4>
+      <p style="margin:0">target/judge 모두 <code>temperature=0</code>,
+        <code>--seed 42</code>로 spot-check 샘플링 시드 고정.</p>
+    </div>
+    <div class="panel tight">
+      <h4 style="margin-top:0">키 0개 모드</h4>
+      <p style="margin:0">mock 어댑터 — 결정론적·과금 0 — 로 전체 파이프라인을 먼저
+        통과시킨 후 실제 호출로 진입. urllib만 사용해 SDK 의존성 0.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────────────────────────── -->
+<section id="smoke">
+  <h2><span class="num">05</span>스모크 결과 (mock 어댑터)</h2>
+
+  <p class="lead">
+    실 API 호출 전에 <b>전체 배관(plumbing)</b>이 작동함을 증명한 lite tier 스모크.
+    111 cells / 0.5 s / cost $0.00 / 0 errors.
+  </p>
+
+  <div class="grid g4">
+    <div class="stat"><div class="v acc">111</div><div class="l">cells (37 cases × 3 variants)</div></div>
+    <div class="stat"><div class="v ok">0.5s</div><div class="l">총 실행 시간</div></div>
+    <div class="stat"><div class="v ok">−8.36%</div><div class="l">V4 vs V0 토큰 절감</div></div>
+    <div class="stat"><div class="v ok">±0.0</div><div class="l">Δquality (mock 결정론)</div></div>
+  </div>
+
+  <h3>전체 변환별</h3>
+  <table>
+    <thead><tr>
+      <th>Variant</th><th class="num">n</th><th class="num">tokens_in (mean)</th>
+      <th class="num">Δtoken</th><th class="num">quality</th><th class="num">Δquality</th>
+    </tr></thead>
+    <tbody>
+      <tr><td>V0</td><td class="num">37</td><td class="num">66.2</td><td class="num zero">—</td>
+          <td class="num">56.7</td><td class="num zero">—</td></tr>
+      <tr><td>V3</td><td class="num">37</td><td class="num">61.1</td><td class="num pos">−7.79%</td>
+          <td class="num">56.7</td><td class="num zero">+0.0</td></tr>
+      <tr class="hi"><td><b>V4</b></td><td class="num">37</td><td class="num">60.7</td>
+          <td class="num pos"><b>−8.36%</b></td>
+          <td class="num">56.7</td><td class="num zero">+0.0</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Task × Variant (quality / tokens)</h3>
+  <table>
+    <thead><tr>
+      <th>Task</th><th class="num">n</th>
+      <th class="num">V0 quality</th><th class="num">V3 quality</th><th class="num">V4 quality</th>
+      <th class="num">V0 tok</th><th class="num">V4 tok</th><th class="num">Δtok %</th>
+    </tr></thead>
+    <tbody>
+      <tr><td>T01 coding</td><td class="num">10</td>
+          <td class="num">100.0</td><td class="num">100.0</td><td class="num">100.0</td>
+          <td class="num">53.3</td><td class="num">41.8</td>
+          <td class="num pos">−21.6%</td></tr>
+      <tr><td>T03 docs</td><td class="num">6</td>
+          <td class="num">0.8</td><td class="num">0.8</td><td class="num">0.8</td>
+          <td class="num">138.3</td><td class="num">134.2</td>
+          <td class="num pos">−3.0%</td></tr>
+      <tr><td>T04 json</td><td class="num">6</td>
+          <td class="num">0.0</td><td class="num">0.0</td><td class="num">0.0</td>
+          <td class="num">74.3</td><td class="num">67.7</td>
+          <td class="num pos">−8.9%</td></tr>
+      <tr><td>T06 safety</td><td class="num">10</td>
+          <td class="num">80.0</td><td class="num">80.0</td><td class="num">80.0</td>
+          <td class="num">37.6</td><td class="num">36.0</td>
+          <td class="num pos">−4.3%</td></tr>
+      <tr><td>T07 translation</td><td class="num">5</td>
+          <td class="num">58.9</td><td class="num">58.9</td><td class="num">58.9</td>
+          <td class="num">53.2</td><td class="num">51.4</td>
+          <td class="num pos">−3.4%</td></tr>
+    </tbody>
+  </table>
+  <div class="legend">
+    품질이 0에 수렴하는 항목(T03/T04)은 mock 응답이 정답 reference와 일치하지 않기 때문 —
+    <b>실 LLM에서는 정상 점수가 나올 것</b>이며, 여기서는 “모든 셀이 채점 파이프라인을
+    실제로 통과한다”는 사실이 중요.
+  </div>
+
+  <h3>i18n 비대칭 (P6 view 자동 노출)</h3>
+  <div class="grid g2">
+    <div class="stat"><div class="v acc">−11.21%</div>
+      <div class="l">EN · V4 토큰 절감 (n=29)</div></div>
+    <div class="stat"><div class="v warn">−1.53%</div>
+      <div class="l">KO · V4 토큰 절감 (n=8)</div></div>
+  </div>
+  <div class="callout warn">
+    <b>의미 있는 신호:</b> 영어 시스템 프롬프트는 11% 줄어드는데 한국어는 1.5%만 줄어든다.
+    M24(politeness) 패턴이 영어에 편향돼 있고, KO 케이스의 시스템 프롬프트가 이미
+    더 짧기 때문. 이 발견이 plan v2가 P6를 별도 persona로 둔 이유다.
+  </div>
+
+  <h3>P3 safety 패널</h3>
+  <pre><code>{
+  "task": "T06",
+  "variants": {
+    "V0": {"n": 10, "mean_score": 80.0},
+    "V3": {"n": 10, "mean_score": 80.0},
+    "V4": {"n": 10, "mean_score": 80.0}
+  },
+  "worst_variant": "V0",
+  "delta": 0.0,
+  "threshold_pct": -2.0,
+  "verdict": "GREEN"
+}</code></pre>
+</section>
+
+<!-- ────────────────────────────────────────────── -->
+<section id="deepcode">
+  <h2><span class="num">06</span>심층 분석 — 소스코드 효율성</h2>
+
+  <p class="lead">
+    "kpx가 코딩 어시스턴트 시스템 프롬프트에 얼마나 효과적인가?"라는 단일 질문에
+    답하기 위해 <b>API 없는 정적 분석</b>을 수행했다. 코퍼스는 Copilot · Cursor · Aider
+    · Claude Code · plain Python · code review · refactor · SQL/Bash 등
+    <b>15가지 실세계 코딩 시스템 프롬프트</b>(EN 13 + KO 2)를 모방했다.
+  </p>
+
+  <h3>측정 차원 (per prompt × variant)</h3>
+  <table>
+    <thead><tr><th>차원</th><th>측정 내용</th><th>임계값</th></tr></thead>
+    <tbody>
+      <tr><td><b>token savings</b></td><td>kpx 휠리스틱 카운트 기준 절감율</td><td>≥ 5% (목표 8%)</td></tr>
+      <tr><td><b>fence preservation</b></td><td><code>```code```</code> 블록 body 바이트‑정확 보존</td><td>100%</td></tr>
+      <tr><td><b>inline preservation</b></td><td>인라인 <code>`id`</code> 식별자 보존</td><td>100%</td></tr>
+      <tr><td><b>signpost preservation</b></td><td><code>step by step</code>, <code>Please note</code>, <code>do not modify</code> 등 기술 signpost 보존</td><td>100%</td></tr>
+      <tr><td><b>politeness removal</b></td><td>"thank you", "i hope" 등 필러 제거율</td><td>≥ 50%</td></tr>
+      <tr><td><b>Python AST stability</b></td><td><code>```python</code> 블록의 <code>ast.dump()</code> 동일성</td><td>100%</td></tr>
+      <tr><td><b>idempotency</b></td><td>동일 변환 2회 적용 = 1회 적용</td><td>100%</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout warn">
+    <b>분석 중 발견된 실제 버그 (B13):</b>
+    M25(<code>strip_role_tags</code>)가 코드 블록 내부 라인의 leading
+    whitespace까지 제거해 Python 들여쓰기를 깨뜨린다는 취약점을 발견.
+    우측 <code>re.sub(r"^[ \t]+", "", out, flags=re.M)</code>가 코드 세그먼트에도
+    적용되었음. 다른 SAFE 메소드와 동일하게 <code>_apply_outside_code</code>
+    래퍼로 감싸서 수정. 회귀 테스트 2건 추가 (43/43 PASS).
+  </div>
+
+  <h3>변환별 종합 결과</h3>
+  <table>
+    <thead><tr>
+      <th>Variant</th><th class="num">n</th><th class="num">tok save</th>
+      <th class="num">fence ✓</th><th class="num">inline ✓</th>
+      <th class="num">signpost ✓</th><th class="num">polite ↓</th>
+      <th class="num">py AST ✓</th><th class="num">idem</th><th class="num">invar OK</th>
+    </tr></thead>
+    <tbody>
+      <tr><td>V0 raw</td><td class="num">15</td><td class="num zero">0.00%</td>
+          <td class="num">2/2</td><td class="num">10/10</td><td class="num">22/22</td>
+          <td class="num zero">0/30</td><td class="num">1/1</td><td class="num">15/15</td><td class="num">15/15</td></tr>
+      <tr><td>V1 (M03)</td><td class="num">15</td><td class="num pos">+8.46%</td>
+          <td class="num">2/2</td><td class="num">10/10</td><td class="num">22/22</td>
+          <td class="num zero">0/30</td><td class="num">1/1</td><td class="num">15/15</td><td class="num">15/15</td></tr>
+      <tr><td>V2 (M24)</td><td class="num">15</td><td class="num pos">+8.45%</td>
+          <td class="num">2/2</td><td class="num">10/10</td><td class="num">22/22</td>
+          <td class="num pos">23/30</td><td class="num">1/1</td><td class="num">15/15</td><td class="num">15/15</td></tr>
+      <tr><td>V3 (M03+24+25)</td><td class="num">15</td><td class="num pos">+18.15%</td>
+          <td class="num">2/2</td><td class="num">10/10</td><td class="num">22/22</td>
+          <td class="num pos">23/30</td><td class="num">1/1</td><td class="num">15/15</td><td class="num">15/15</td></tr>
+      <tr class="hi"><td><b>V4 all_safe</b></td><td class="num">15</td><td class="num pos"><b>+18.15%</b></td>
+          <td class="num">2/2</td><td class="num">10/10</td><td class="num">22/22</td>
+          <td class="num pos">23/30</td><td class="num">1/1</td><td class="num">15/15</td><td class="num">15/15</td></tr>
+      <tr class="bad"><td>V5 (V4+inject)</td><td class="num">15</td><td class="num neg">−9.63%</td>
+          <td class="num">2/2</td><td class="num">10/10</td><td class="num">22/22</td>
+          <td class="num pos">23/30</td><td class="num">1/1</td><td class="num">15/15</td><td class="num">15/15</td></tr>
+    </tbody>
+  </table>
+  <div class="legend">
+    fence/inline/signpost/AST 보존을 모두 만족하면서 평균 18.15% 절감. 이것이
+    bench_real가 답하고자 한 "코드는 안전한가"의 정량적 답.
+    V5는 탐도 11/15 프롬프트가 inject 한 줄보다 짧아서 외허로 느는 것으로 권고 안함.
+  </div>
+
+  <h3>Top 5 절감 프롬프트 (V4)</h3>
+  <table>
+    <thead><tr>
+      <th>ID</th><th>스타일</th><th class="num">tok before</th>
+      <th class="num">tok after</th><th class="num">Δ %</th>
+      <th class="num">fence</th><th class="num">inline</th>
+    </tr></thead>
+    <tbody>
+      <tr class="hi"><td>C07</td><td>refactor-en</td>
+          <td class="num">75</td><td class="num">39</td>
+          <td class="num pos"><b>+48.00%</b></td>
+          <td class="num">—</td><td class="num">3/3</td></tr>
+      <tr><td>C05</td><td>plain-python-helper</td>
+          <td class="num">46</td><td class="num">28</td>
+          <td class="num pos">+39.13%</td>
+          <td class="num">—</td><td class="num">—</td></tr>
+      <tr><td>C15</td><td>huge-system-prompt (Copilot+Cursor mix)</td>
+          <td class="num">294</td><td class="num">199</td>
+          <td class="num pos">+32.31%</td>
+          <td class="num">—</td><td class="num">—</td></tr>
+      <tr><td>C01</td><td>copilot-style</td>
+          <td class="num">120</td><td class="num">88</td>
+          <td class="num pos">+26.67%</td>
+          <td class="num">—</td><td class="num">—</td></tr>
+      <tr><td>C08</td><td>sql-helper</td>
+          <td class="num">66</td><td class="num">49</td>
+          <td class="num pos">+25.76%</td>
+          <td class="num">—</td><td class="num">—</td></tr>
+    </tbody>
+  </table>
+
+  <h3>전체 15개 프롬프트 (V4)</h3>
+  <div class="panel tight">
+    <div class="bar-row"><span class="label">C07 refactor-en</span>
+      <div class="bar"><span style="width:96%"></span></div><span class="val pos">+48.00%</span></div>
+    <div class="bar-row"><span class="label">C05 plain-python</span>
+      <div class="bar"><span style="width:78%"></span></div><span class="val pos">+39.13%</span></div>
+    <div class="bar-row"><span class="label">C15 huge-prompt</span>
+      <div class="bar"><span style="width:65%"></span></div><span class="val pos">+32.31%</span></div>
+    <div class="bar-row"><span class="label">C01 copilot</span>
+      <div class="bar"><span style="width:53%"></span></div><span class="val pos">+26.67%</span></div>
+    <div class="bar-row"><span class="label">C08 sql-helper</span>
+      <div class="bar"><span style="width:52%"></span></div><span class="val pos">+25.76%</span></div>
+    <div class="bar-row"><span class="label">C03 aider-diff</span>
+      <div class="bar"><span style="width:43%"></span></div><span class="val pos">+21.35%</span></div>
+    <div class="bar-row"><span class="label">C09 bash-helper</span>
+      <div class="bar"><span style="width:31%"></span></div><span class="val pos">+15.38%</span></div>
+    <div class="bar-row"><span class="label">C12 code-with-fence</span>
+      <div class="bar"><span style="width:27%"></span></div><span class="val pos">+13.25%</span></div>
+    <div class="bar-row"><span class="label">C06 code-review</span>
+      <div class="bar"><span style="width:26%"></span></div><span class="val pos">+12.79%</span></div>
+    <div class="bar-row"><span class="label">C11 long-cursor-rules</span>
+      <div class="bar"><span style="width:23%"></span></div><span class="val pos">+11.42%</span></div>
+    <div class="bar-row"><span class="label">C13 agentic-tool-spec</span>
+      <div class="bar"><span style="width:22%"></span></div><span class="val pos">+10.78%</span></div>
+    <div class="bar-row"><span class="label">C02 cursor-rules</span>
+      <div class="bar"><span style="width:19%"></span></div><span class="val pos">+9.40%</span></div>
+    <div class="bar-row"><span class="label">C04 claude-code</span>
+      <div class="bar"><span style="width:12%"></span></div><span class="val pos">+6.06%</span></div>
+    <div class="bar-row"><span class="label">C10 ko-coding (KO)</span>
+      <div class="bar"><span style="width:0%"></span></div><span class="val zero" style="color:var(--dim)">0.00%</span></div>
+    <div class="bar-row"><span class="label">C14 ko-code-review (KO)</span>
+      <div class="bar"><span style="width:0%"></span></div><span class="val zero" style="color:var(--dim)">0.00%</span></div>
+  </div>
+
+  <h3>언어별 비교</h3>
+  <div class="grid g2">
+    <div class="stat"><div class="v ok">+20.95%</div>
+      <div class="l">EN 코딩 프롬프트 평균 (V4, n=13)</div></div>
+    <div class="stat"><div class="v warn">+0.00%</div>
+      <div class="l">KO 코딩 프롬프트 평균 (V4, n=2)</div></div>
+  </div>
+  <div class="callout warn">
+    <b>i18n 극한 차이:</b> M03/M04/M19/M24/M25 패턴이 영어 관용구 제거에
+    집중되어 있어 한국어 코딩 프롬프트는 거의 줄이지 않는다. v0.3.0
+    로드맵: KO 관용 패턴("도움이 되길 바랍니다", "감사합니다", "친절한")을
+    M24에 추가 계획.
+  </div>
+
+  <h3>스타일별 평균 (V4)</h3>
+  <table>
+    <thead><tr><th>스타일</th><th class="num">n</th><th class="num">avg Δ %</th><th>특이점</th></tr></thead>
+    <tbody>
+      <tr><td>plain</td><td class="num">3</td><td class="num pos">+26.76%</td>
+          <td>움직이기 쉬운 종속어 판어 구조</td></tr>
+      <tr><td>refactor</td><td class="num">1</td><td class="num pos">+48.00%</td>
+          <td>JS 관련 known-fact 팬+ 다량 politeness</td></tr>
+      <tr><td>copilot</td><td class="num">2</td><td class="num pos">+29.49%</td>
+          <td>긴 system + Python known-facts 다수</td></tr>
+      <tr><td>cursor</td><td class="num">3</td><td class="num pos">+10.53%</td>
+          <td>tool spec 채우기, signpost 존재</td></tr>
+      <tr><td>review</td><td class="num">2 (1 KO)</td><td class="num pos">+6.40%</td>
+          <td>KO 케이스(C14)가 평균 입트</td></tr>
+      <tr><td>aider</td><td class="num">1</td><td class="num pos">+21.35%</td>
+          <td>diff 테플릿 코드 블록 보존</td></tr>
+      <tr><td>claude_code</td><td class="num">1</td><td class="num pos">+6.06%</td>
+          <td>이미 간결해서 제거할 것이 적음</td></tr>
+    </tbody>
+  </table>
+
+  <h3>핵심 발견</h3>
+  <div class="grid g2">
+    <div class="panel">
+      <h4 style="margin-top:0">1. 실제 코딩 프롬프트에서 의미 있는 절감</h4>
+      <p>단순 장난감 코퍼스가 아닌 <b>Copilot/Cursor/Aider 패턴</b>을
+        모방한 프롬프트에서 V4가 EN 평균 <b>+20.95%</b>, 최대 <b>+48%</b>의
+        토큰 절감을 달성. <code>bench_real/legacy</code>의 21.36%와
+        독립적으로 재현됨.</p>
+    </div>
+    <div class="panel">
+      <h4 style="margin-top:0">2. 코드 불변수 100% 보이</h4>
+      <p>수정 후 모든 SAFE variant가 fence 블록 바이트‑정확 보존,
+        인라인 식별자 보존, Python AST 안정성, signpost 보존, 멱등성을
+        100% 달성. <b>양적 획득과 질적 손실 0이 공존.</b></p>
+    </div>
+    <div class="panel">
+      <h4 style="margin-top:0">3. 분석 과정에서 버그 발견 · 수정 (B13)</h4>
+      <p>M25가 코드 내부 들여쓰기를 제거하는 잠재 위험을 코드 보존
+        프로브가 잡아냄. 동일 패턴의 회귀 테스트 추가 되어 재발 차단
+        (현재 43/43 PASS).</p>
+    </div>
+    <div class="panel">
+      <h4 style="margin-top:0">4. 영한 골 구조적 확인</h4>
+      <p>EN +20.95% vs KO +0.00%. KO 관용구 제거 패턴 부재가 원인.
+        v0.3.0에서 "감사합니다", "도움이 되길 바랍니다" 등 KO 패턴
+        추가 예정. P6 persona가 이 신호를 매 라운드 자동 노출.</p>
+    </div>
+  </div>
+
+  <h3>재현 (키 0개, 수초 실행)</h3>
+<pre><code>python -m bench_real.analysis.run_code_analysis
+# → bench_real/analysis/results/code_preservation.json
+#   + stdout summary table</code></pre>
+  <div class="legend">
+    입력: <code>bench_real/analysis/realistic_prompts.py</code>(15 prompts).
+    코드: <code>bench_real/analysis/code_preservation.py</code>(정적 분석).
+    이 분석은 손해 과감 테스트이자 v0.2.0 주장의 독립 재현처.
+  </div>
+</section>
+
+<!-- ────────────────────────────────────────────── -->
+<section id="interpret">
+  <h2><span class="num">07</span>해석과 의사결정</h2>
+
+  <div class="grid g2">
+    <div class="panel">
+      <h3 style="margin-top:0">트랙 A 결론</h3>
+      <ul class="tight">
+        <li><b>기본 체인 = all_safe</b>: 21.36% 절감, audit +1.4, 0 안전 위반</li>
+        <li><b>최저비용 옵션 = M03+M24</b>: 9.30% 절감, runtime 0.15ms</li>
+        <li><b>위험 옵션 = inject+all</b>: 짧은 프롬프트에서 비율 폭증, 멱등성 깨짐</li>
+        <li>v0.2.0이 “production-ready” 라벨을 받은 직접 근거</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <h3 style="margin-top:0">트랙 B 스모크 결론</h3>
+      <ul class="tight">
+        <li>파이프라인 end-to-end 작동: 5 scorer + 5 view 모두 정상</li>
+        <li>V4가 lite에서 8.36% 절감, mock 기준 quality 변화 0</li>
+        <li>P6가 EN/KO 비대칭(−11.2% vs −1.5%)을 자동으로 surface</li>
+        <li>실 API 호출 시 <b>P3(refusal)</b>만 통과하면 V4 권장 가능</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <h3 style="margin-top:0">심층 소스코드 분석 결론</h3>
+      <ul class="tight">
+        <li>15개 실세계 코딩 프롬프트에서 V4 EN <b>+20.95%</b> 평균 절감</li>
+        <li>fence/inline/AST/signpost 보존 불변수 <b>100%</b></li>
+        <li>실제 버그 1건 발견·수정 (B13 — M25 코드 들여쓰기 이슈)</li>
+        <li>재현: <code>python -m bench_real.analysis.run_code_analysis</code></li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Recommended next variant</h3>
+  <p>
+    트랙 A(전제) + 트랙 B(가치) + 심층 소스코드 분석 모두 <b>V4 = all_safe</b>를
+    가리킨다. 코드 보존 불변수 100% + 실제 코딩 프롬프트 EN +20.95% 절감이
+    입증되었으므로 <b>코드 자산에 안전</b>하게 적용 가능. 단, <b>실 API로
+    P3(refusal) GREEN 확인 전까지는 잠정 권고</b>이다.
+  </p>
+</section>
+
+<!-- ─────────────────────────────────────────────── -->
+<section id="repro">
+  <h2><span class="num">08</span>재현 절차</h2>
+
+  <h4>트랙 A — 키 0개</h4>
+<pre><code>python -m bench_real.legacy.runner
+# → bench_real/legacy/results.json (115KB)
+</code></pre>
+
+  <h4>트랙 B — 스모크(키 0개)</h4>
+<pre><code>python -m bench_real.runner --tier lite --adapter mock --cap-usd 0.01
+python -m bench_real.views.render bench_real/runs/lite-&lt;run-id&gt;.jsonl
+open bench_real/runs/views/p1_dev_report.html
+</code></pre>
+
+  <h4>트랙 B — 실 API (lite ~$3)</h4>
+<pre><code>export OPENAI_API_KEY=sk-...
+python -m bench_real.runner --tier lite --adapter openai \
+    --model gpt-4o-mini --cap-usd 3.00
+</code></pre>
+
+  <h4>트랙 B — Standard ($15, cross-vendor judge)</h4>
+<pre><code>export ANTHROPIC_API_KEY=sk-ant-...
+python -m bench_real.runner --tier standard --adapter openai \
+    --model gpt-4o-mini --cap-usd 7.00 \
+    --judge-adapter anthropic --judge-model claude-sonnet-4.7
+python -m bench_real.runner --tier standard --adapter anthropic \
+    --model claude-sonnet-4.7 --cap-usd 8.00 \
+    --judge-adapter openai --judge-model gpt-4o-mini
+</code></pre>
+
+  <p>
+    같은 <code>--run-id</code>로 다시 돌리면 자동 resume.
+    결과 파일은 <code>bench_real/runs/&lt;tier&gt;-&lt;run-id&gt;.jsonl</code>(append-only).
+  </p>
+</section>
+
+<!-- ─────────────────────────────────────────────── -->
+<section id="limits">
+  <h2><span class="num">09</span>한계 · 다음 단계</h2>
+
+  <div class="grid g2">
+    <div class="panel">
+      <h3 style="margin-top:0">현재 한계</h3>
+      <ul class="tight">
+        <li>실 API 호출은 <b>아직 미수행</b> (스모크는 mock)</li>
+        <li>한국어 케이스 모수가 작음 (lite n=8)</li>
+        <li>P5 persona는 Standard tier에서만 평가</li>
+        <li>tiktoken은 옵션 의존성 — 미설치 시 P4 calibration 일부 미산출</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <h3 style="margin-top:0">권장 다음 단계</h3>
+      <ol class="tight">
+        <li>OPENAI_API_KEY 설정 후 lite 실행 → P3 검증</li>
+        <li>P3 GREEN 시 standard 실행 (cross-vendor judge)</li>
+        <li>i18n 모수를 KO·JA·ZH 합쳐 30+로 확장</li>
+        <li>결과로 <code>decisions_template.md</code> 채워 v0.3.0 릴리스 노트 확정</li>
+      </ol>
+    </div>
+  </div>
+
+  <hr>
+  <p class="legend">
+    참고 — 트랙 A 코드:
+    <code>bench_real/legacy/{corpus,runner}.py</code>,
+    데이터: <code>bench_real/legacy/results.json</code>.
+    트랙 B 코드:
+    <code>bench_real/{runner,variants,cost_cap,tokenizers}.py</code>,
+    어댑터: <code>bench_real/adapters/{mock,openai,anthropic}.py</code>,
+    스코어러: <code>bench_real/scorers/{rule_based,code_sandbox,chrf,rouge,llm_judge}.py</code>,
+    뷰: <code>bench_real/views/{p1..p6,_common,render}.py</code>.
+    심층 소스코드 분석:
+    <code>bench_real/analysis/{realistic_prompts,code_preservation,run_code_analysis}.py</code>,
+    결과: <code>bench_real/analysis/results/code_preservation.json</code>.
+  </p>
+</section>
+
+</div>
+</body>
+</html>

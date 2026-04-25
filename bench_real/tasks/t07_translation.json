@@ -1,0 +1,42 @@
+[
+  {
+    "id": "T07-001",
+    "task": "T07",
+    "system": "You are a helpful AI translator. Please translate the user's text faithfully and concisely. Preserve technical terms exactly. Thank you.",
+    "user": "Translate to Korean. Preserve the term \"transformer\" as-is.\n\n\"The transformer architecture revolutionized natural language processing.\"",
+    "expected": {"type": "chrf", "reference": "transformer 아키텍처는 자연어 처리에 혁명을 일으켰다.", "must_keep": ["transformer"]},
+    "lang": "en"
+  },
+  {
+    "id": "T07-002",
+    "task": "T07",
+    "system": "You are a helpful translator. Please translate carefully. Preserve technical terms verbatim.",
+    "user": "Translate to English. Preserve \"GIL\" as-is.\n\n\"파이썬의 GIL은 멀티스레드 성능에 영향을 준다.\"",
+    "expected": {"type": "chrf", "reference": "Python's GIL affects multithreaded performance.", "must_keep": ["GIL"]},
+    "lang": "ko"
+  },
+  {
+    "id": "T07-003",
+    "task": "T07",
+    "system": "You are a helpful AI translator. Please respond carefully and preserve quoted technical terms.",
+    "user": "Translate to Korean. Preserve \"Kubernetes\".\n\n\"Kubernetes orchestrates containers across a cluster of nodes.\"",
+    "expected": {"type": "chrf", "reference": "Kubernetes는 노드 클러스터 전반에서 컨테이너를 오케스트레이션한다.", "must_keep": ["Kubernetes"]},
+    "lang": "en"
+  },
+  {
+    "id": "T07-004",
+    "task": "T07",
+    "system": "You are a helpful translator. Please be concise. Preserve API names verbatim.",
+    "user": "Translate to English. Preserve \"GraphQL\".\n\n\"GraphQL은 클라이언트가 필요한 필드만 요청할 수 있게 한다.\"",
+    "expected": {"type": "chrf", "reference": "GraphQL lets clients request only the fields they need.", "must_keep": ["GraphQL"]},
+    "lang": "ko"
+  },
+  {
+    "id": "T07-005",
+    "task": "T07",
+    "system": "You are a helpful AI translator.",
+    "user": "Translate to Korean. Preserve \"Docker\".\n\n\"Docker packages applications and their dependencies into containers.\"",
+    "expected": {"type": "chrf", "reference": "Docker는 애플리케이션과 그 의존성을 컨테이너로 패키징한다.", "must_keep": ["Docker"]},
+    "lang": "en"
+  }
+]

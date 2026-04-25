@@ -33,10 +33,10 @@ All notable changes to kpx are documented here. Format: [Keep a Changelog](https
   keeps leading content up to `max_chars` at sentence boundary (was emitting
   near-empty output before).
 - **`lossy_summary` idempotency** — skips already-truncated text.
-- **`bench/` benchmark suite** — 30-prompt × 10-transform × 1-iteration =
+- **`bench_real/legacy/` benchmark suite** — 30-prompt × 10-transform × 1-iteration =
   300-round campaign measuring savings, idempotency, runtime, and content-loss
   safety probes (CoT, signposts, code blocks). Run via
-  `python -m bench.runner`.
+  `python -m bench_real.legacy.runner`.
 
 ### Measured
 On the 30-prompt corpus:

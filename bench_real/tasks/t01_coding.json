@@ -1,0 +1,82 @@
+[
+  {
+    "id": "T01-001",
+    "task": "T01",
+    "system": "You are a helpful AI assistant. You are a Python expert. Python is a high-level interpreted language. Please respond carefully. Respond with code only — no preamble, no apologies. Think step by step internally if needed.",
+    "user": "Write a Python function `def add(a, b)` that returns the sum of two numbers. Return only the function in a python code block.",
+    "expected": {"type": "pytest", "tests": ["assert add(1,2)==3", "assert add(0,0)==0", "assert add(-5,5)==0"]},
+    "lang": "en"
+  },
+  {
+    "id": "T01-002",
+    "task": "T01",
+    "system": "You are a helpful AI assistant. You are a Python expert. JSON stands for JavaScript Object Notation. Please provide a response in a Python code block. Thank you in advance.",
+    "user": "Write `def is_even(n: int) -> bool` that returns whether n is even.",
+    "expected": {"type": "pytest", "tests": ["assert is_even(2)==True", "assert is_even(3)==False", "assert is_even(0)==True", "assert is_even(-4)==True"]},
+    "lang": "en"
+  },
+  {
+    "id": "T01-003",
+    "task": "T01",
+    "system": "You are a helpful AI assistant. <|system|>\nYou are a coding assistant.\n<|/system|>\nDo your best. Please be concise.",
+    "user": "Write `def reverse_string(s: str) -> str` that returns the reverse of s.",
+    "expected": {"type": "pytest", "tests": ["assert reverse_string('abc')=='cba'", "assert reverse_string('')==''", "assert reverse_string('a')=='a'"]},
+    "lang": "en"
+  },
+  {
+    "id": "T01-004",
+    "task": "T01",
+    "system": "You are an AI language model. As you probably know, recursion can blow the stack. Please respond carefully and use iteration.",
+    "user": "Write `def factorial(n: int) -> int` for n>=0. Use iteration.",
+    "expected": {"type": "pytest", "tests": ["assert factorial(0)==1", "assert factorial(1)==1", "assert factorial(5)==120", "assert factorial(7)==5040"]},
+    "lang": "en"
+  },
+  {
+    "id": "T01-005",
+    "task": "T01",
+    "system": "You are a helpful assistant. ### Instruction:\nYou are a Python tutor.\n### Response:\nPlease note: keep solutions short. Thank you.",
+    "user": "Write `def sum_list(xs)` that returns the sum of all numbers in xs (empty list -> 0).",
+    "expected": {"type": "pytest", "tests": ["assert sum_list([])==0", "assert sum_list([1,2,3])==6", "assert sum_list([-1,1])==0"]},
+    "lang": "en"
+  },
+  {
+    "id": "T01-006",
+    "task": "T01",
+    "system": "You are a helpful AI assistant. SQL stands for Structured Query Language (irrelevant here). Please respond. I hope this helps.",
+    "user": "Write `def count_vowels(s: str) -> int` (a/e/i/o/u, case-insensitive).",
+    "expected": {"type": "pytest", "tests": ["assert count_vowels('hello')==2", "assert count_vowels('AEIOU')==5", "assert count_vowels('xyz')==0"]},
+    "lang": "en"
+  },
+  {
+    "id": "T01-007",
+    "task": "T01",
+    "system": "You are a helpful AI assistant. [INST] You are a coder. [/INST] Please respond concisely.",
+    "user": "Write `def is_palindrome(s: str) -> bool` (case-insensitive).",
+    "expected": {"type": "pytest", "tests": ["assert is_palindrome('Aba')==True", "assert is_palindrome('hello')==False", "assert is_palindrome('')==True"]},
+    "lang": "en"
+  },
+  {
+    "id": "T01-008",
+    "task": "T01",
+    "system": "You are a helpful AI assistant. You are a Python expert. Please provide a response. Thank you.",
+    "user": "Write `def fizzbuzz(n: int) -> list[str]` returning the standard FizzBuzz output for 1..n inclusive.",
+    "expected": {"type": "pytest", "tests": ["assert fizzbuzz(5)==['1','2','Fizz','4','Buzz']", "assert fizzbuzz(15)[-1]=='FizzBuzz'", "assert len(fizzbuzz(15))==15"]},
+    "lang": "en"
+  },
+  {
+    "id": "T01-009",
+    "task": "T01",
+    "system": "You are a helpful assistant. Git is a distributed version control system (irrelevant). Please respond. I hope this is useful.",
+    "user": "Write `def max_of(xs)` returning the maximum (raise ValueError if empty).",
+    "expected": {"type": "pytest", "tests": ["assert max_of([1,2,3])==3", "assert max_of([-5,-1,-10])==-1", "import pytest\ntry:\n    max_of([])\n    raise AssertionError('expected ValueError')\nexcept ValueError:\n    pass"]},
+    "lang": "en"
+  },
+  {
+    "id": "T01-010",
+    "task": "T01",
+    "system": "You are a helpful AI assistant. Please respond carefully. Thank you for using this tool.",
+    "user": "Write `def unique(xs)` returning a list with duplicates removed, preserving first-occurrence order.",
+    "expected": {"type": "pytest", "tests": ["assert unique([1,2,2,3,1])==[1,2,3]", "assert unique([])==[]", "assert unique(['a','b','a'])==['a','b']"]},
+    "lang": "en"
+  }
+]

@@ -245,14 +245,17 @@ _ROLE_TAG_PATTERNS = [
 
 
 def strip_role_tags(text: str) -> str:
-    out = text
-    for pat in _ROLE_TAG_PATTERNS:
-        out = re.sub(pat, "", out)
-    # Collapse runs of horizontal whitespace introduced by removed tags, but
-    # preserve newlines and leading indentation.
-    out = re.sub(r"[ \t]{2,}", " ", out)
-    out = re.sub(r"^[ \t]+", "", out, flags=re.M)
-    return _collapse_blank_lines(out)
+    def _strip(seg: str) -> str:
+        out = seg
+        for pat in _ROLE_TAG_PATTERNS:
+            out = re.sub(pat, "", out)
+        # Collapse runs of horizontal whitespace introduced by removed tags,
+        # then trim leading horizontal whitespace per line — but ONLY in
+        # non-code segments. Code fences are protected by _apply_outside_code.
+        out = re.sub(r"[ \t]{2,}", " ", out)
+        out = re.sub(r"^[ \t]+", "", out, flags=re.M)
+        return out
+    return _collapse_blank_lines(_apply_outside_code(text, _strip))
 
 
 # ---------------------------------------------------------------------------

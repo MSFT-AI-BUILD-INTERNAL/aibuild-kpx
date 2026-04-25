@@ -14,7 +14,7 @@ from typing import Callable
 from kpx import audit, compress, estimate_tokens
 from kpx.methods import inject_no_filler
 
-from bench.corpus import all_prompts, Prompt
+from bench_real.legacy.corpus import all_prompts, Prompt
 
 
 # 10 transform configurations
@@ -156,7 +156,7 @@ def aggregate(results: list[Result]) -> dict:
     return {"totals": totals, "by_transform": summary}
 
 
-def main(out_path: str = "bench/results.json") -> dict:
+def main(out_path: str = "bench_real/legacy/results.json") -> dict:
     results = run_all()
     agg = aggregate(results)
     payload = {

@@ -1,0 +1,74 @@
+[
+  {
+    "id": "T04-001",
+    "task": "T04",
+    "system": "You are a helpful AI assistant. You are an information extraction system. JSON stands for JavaScript Object Notation. Please respond with valid JSON only — no preamble, no apologies. Thank you.",
+    "user": "Extract the person record from this text and return it as JSON with keys name (string), age (integer), city (string).\n\nText: Alice is 30 years old and lives in Seoul.",
+    "expected": {
+      "type": "json_schema",
+      "schema": {"type": "object", "required": ["name", "age", "city"],
+                  "properties": {"name": {"type": "string"}, "age": {"type": "integer"}, "city": {"type": "string"}}}
+    },
+    "lang": "en"
+  },
+  {
+    "id": "T04-002",
+    "task": "T04",
+    "system": "You are a helpful assistant. Please provide a response in JSON. Thank you.",
+    "user": "Extract from text: \"Order #4521 was placed on 2026-04-20 for $129.99 by user_id=778\". Return JSON with keys order_id (integer), date (string), amount (number), user_id (integer).",
+    "expected": {
+      "type": "json_schema",
+      "schema": {"type": "object", "required": ["order_id", "date", "amount", "user_id"],
+                  "properties": {"order_id": {"type": "integer"}, "date": {"type": "string"}, "amount": {"type": "number"}, "user_id": {"type": "integer"}}}
+    },
+    "lang": "en"
+  },
+  {
+    "id": "T04-003",
+    "task": "T04",
+    "system": "You are a helpful AI assistant. As you probably know, JSON requires double quotes. Please be careful. I hope this helps.",
+    "user": "Extract: \"Bob, 42, lives in Tokyo and works as engineer\". Schema: name (string), age (integer), city (string), job (string).",
+    "expected": {
+      "type": "json_schema",
+      "schema": {"type": "object", "required": ["name", "age", "city", "job"],
+                  "properties": {"name": {"type": "string"}, "age": {"type": "integer"}, "city": {"type": "string"}, "job": {"type": "string"}}}
+    },
+    "lang": "en"
+  },
+  {
+    "id": "T04-004",
+    "task": "T04",
+    "system": "당신은 친절한 AI 비서입니다. JSON으로만 응답하세요. 감사합니다.",
+    "user": "다음에서 정보를 추출해 JSON으로 반환하세요. 키: name (string), age (integer), city (string).\n\n텍스트: 김철수는 서른다섯 살이며 부산에 거주한다. (나이는 정수로 변환)",
+    "expected": {
+      "type": "json_schema",
+      "schema": {"type": "object", "required": ["name", "age", "city"],
+                  "properties": {"name": {"type": "string"}, "age": {"type": "integer"}, "city": {"type": "string"}}}
+    },
+    "lang": "ko"
+  },
+  {
+    "id": "T04-005",
+    "task": "T04",
+    "system": "You are a helpful assistant. Please respond with JSON only.",
+    "user": "Extract product info: \"iPhone 17 Pro is $1199 with 256GB storage, weighing 187g\". Schema: name (string), price (number), storage_gb (integer), weight_g (integer).",
+    "expected": {
+      "type": "json_schema",
+      "schema": {"type": "object", "required": ["name", "price", "storage_gb", "weight_g"],
+                  "properties": {"name": {"type": "string"}, "price": {"type": "number"}, "storage_gb": {"type": "integer"}, "weight_g": {"type": "integer"}}}
+    },
+    "lang": "en"
+  },
+  {
+    "id": "T04-006",
+    "task": "T04",
+    "system": "You are a helpful assistant. <|system|>\nExtract structured data.\n<|/system|>\nReturn JSON only.",
+    "user": "Extract event: \"PyCon 2026 will be held in Pittsburgh from May 14 to May 22, with about 2500 attendees expected\". Schema: name (string), location (string), start_date (string), end_date (string), expected_attendees (integer).",
+    "expected": {
+      "type": "json_schema",
+      "schema": {"type": "object", "required": ["name", "location", "start_date", "end_date", "expected_attendees"],
+                  "properties": {"name": {"type": "string"}, "location": {"type": "string"}, "start_date": {"type": "string"}, "end_date": {"type": "string"}, "expected_attendees": {"type": "integer"}}}
+    },
+    "lang": "en"
+  }
+]

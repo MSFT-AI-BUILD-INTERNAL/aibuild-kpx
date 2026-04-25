@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>kpx 실측 벤치마크 계획서 v2 — Persona-driven</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --panel: #161b22;
+    --panel-2: #1c2330;
+    --border: #30363d;
+    --fg: #e6edf3;
+    --muted: #9da7b3;
+    --accent: #58a6ff;
+    --accent-2: #7ee787;
+    --warn: #f0b72f;
+    --danger: #ff7b72;
+    --code-bg: #0b1020;
+    --p1: #58a6ff;
+    --p2: #7ee787;
+    --p3: #ff7b72;
+    --p4: #d29922;
+    --p5: #8957e5;
+    --p6: #db61a2;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Pretendard",
+      "Noto Sans KR", Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    line-height: 1.65;
+    font-size: 16px;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 48px 28px 96px; }
+
+  header.hero {
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background:
+      radial-gradient(1100px 280px at 0% 0%, rgba(88,166,255,0.14), transparent 60%),
+      radial-gradient(900px 260px at 100% 100%, rgba(126,231,135,0.10), transparent 60%),
+      var(--panel);
+    padding: 36px 32px;
+    margin-bottom: 32px;
+  }
+  header.hero .crumb { font-size: 12px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; }
+  header.hero h1 { margin: 4px 0 8px; font-size: 36px; letter-spacing: -0.5px; }
+  header.hero h1 .ver { font-size: 14px; color: var(--muted); font-weight: 500; margin-left: 10px; vertical-align: middle; }
+  header.hero p.lead { margin: 0 0 18px; color: var(--muted); font-size: 17px; max-width: 860px; }
+  .badges { display: flex; flex-wrap: wrap; gap: 8px; }
+  .badge {
+    display: inline-block; padding: 4px 10px;
+    background: var(--panel-2); border: 1px solid var(--border);
+    border-radius: 999px; font-size: 12px; color: var(--muted);
+  }
+  .badge.ok  { color: var(--accent-2); border-color: rgba(126,231,135,0.4); }
+  .badge.acc { color: var(--accent);   border-color: rgba(88,166,255,0.4); }
+  .badge.warn{ color: var(--warn);     border-color: rgba(240,183,47,0.45); }
+  .badge.danger{ color: var(--danger); border-color: rgba(255,123,114,0.5); }
+
+  .tldr {
+    background: var(--panel-2);
+    border: 1px solid rgba(88,166,255,0.35);
+    border-left: 4px solid var(--accent);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 18px 0 0;
+    color: #d6deeb;
+    font-size: 15px;
+  }
+  .tldr b { color: var(--accent); }
+
+  section { margin: 44px 0; }
+  section > h2 {
+    font-size: 24px; margin: 0 0 14px;
+    padding-bottom: 8px; border-bottom: 1px solid var(--border);
+  }
+  section > h2 .num {
+    display: inline-block; width: 28px; height: 28px; line-height: 28px;
+    text-align: center; background: var(--accent); color: #0b1020;
+    border-radius: 8px; font-size: 14px; margin-right: 10px;
+    vertical-align: middle; font-weight: 700;
+  }
+  section h3 { font-size: 18px; margin: 24px 0 10px; color: var(--fg); }
+  section h4 { font-size: 15px; margin: 18px 0 8px; color: var(--accent); }
+  p, li { color: #c9d1d9; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* persona cards */
+  .persona-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+    gap: 16px;
+    margin-top: 12px;
+  }
+  .persona {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px;
+    border-top: 4px solid var(--accent);
+  }
+  .persona.p1 { border-top-color: var(--p1); }
+  .persona.p2 { border-top-color: var(--p2); }
+  .persona.p3 { border-top-color: var(--p3); }
+  .persona.p4 { border-top-color: var(--p4); }
+  .persona.p5 { border-top-color: var(--p5); }
+  .persona.p6 { border-top-color: var(--p6); }
+  .persona .head {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 10px;
+  }
+  .persona .id {
+    font-family: "SF Mono", Menlo, monospace;
+    font-size: 13px; font-weight: 700;
+    padding: 3px 8px; border-radius: 6px;
+    background: rgba(255,255,255,0.06);
+  }
+  .persona.p1 .id { color: var(--p1); }
+  .persona.p2 .id { color: var(--p2); }
+  .persona.p3 .id { color: var(--p3); }
+  .persona.p4 .id { color: var(--p4); }
+  .persona.p5 .id { color: var(--p5); }
+  .persona.p6 .id { color: var(--p6); }
+  .persona h4 { margin: 0; font-size: 16px; color: var(--fg); }
+  .persona .row {
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    gap: 6px 10px;
+    font-size: 13.5px;
+    margin-top: 8px;
+  }
+  .persona .row .k { color: var(--muted); font-weight: 600; }
+  .persona .row .v { color: #c9d1d9; }
+  .persona .row .v b { color: var(--accent-2); }
+
+  /* p-tag chips */
+  .ptag {
+    display: inline-block; padding: 2px 8px; border-radius: 999px;
+    font-size: 11px; font-weight: 700; margin-right: 4px;
+    color: #0b1020;
+  }
+  .ptag.p1 { background: var(--p1); color: #fff; }
+  .ptag.p2 { background: var(--p2); }
+  .ptag.p3 { background: var(--p3); color: #fff; }
+  .ptag.p4 { background: var(--p4); color: #1a1a1a; }
+  .ptag.p5 { background: var(--p5); color: #fff; }
+  .ptag.p6 { background: var(--p6); color: #fff; }
+
+  /* tables */
+  table {
+    width: 100%; border-collapse: collapse;
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 8px; overflow: hidden; font-size: 14px;
+  }
+  th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+  thead th { background: var(--panel-2); color: var(--fg); font-weight: 600; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: rgba(88,166,255,0.06); }
+  td.mid, td.num { font-family: "SF Mono", Menlo, Consolas, monospace; white-space: nowrap; }
+  td.mid { color: var(--accent-2); }
+  td.num { text-align: right; }
+  td.center { text-align: center; }
+  .yes { color: var(--accent-2); font-weight: 700; }
+  .opt { color: var(--warn); }
+  .no  { color: var(--muted); }
+
+  pre {
+    background: var(--code-bg); border: 1px solid var(--border);
+    border-radius: 8px; padding: 14px 16px; overflow-x: auto;
+    font-size: 13.5px; color: #d6deeb; line-height: 1.55;
+  }
+  code { font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 13.5px; }
+  p code, li code, td code, h3 code, h4 code, .row code {
+    background: rgba(110,118,129,0.25); padding: 1px 6px;
+    border-radius: 4px; color: #e6edf3;
+  }
+
+  /* tier campaign cards */
+  .tier-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+    margin-top: 14px;
+  }
+  .tier {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    position: relative;
+  }
+  .tier.standard { border-color: var(--accent); box-shadow: 0 0 0 1px rgba(88,166,255,0.25); }
+  .tier h3 { margin: 0 0 4px; font-size: 20px; color: var(--fg); }
+  .tier .price { font-size: 28px; color: var(--accent-2); font-weight: 700; margin: 4px 0; }
+  .tier .when { color: var(--muted); font-size: 13px; }
+  .tier ul { padding-left: 18px; margin: 12px 0 0; }
+  .tier li { font-size: 13.5px; margin: 4px 0; color: #c9d1d9; }
+  .tier .pick {
+    position: absolute; top: 14px; right: 14px;
+    background: var(--accent); color: #0b1020;
+    font-size: 11px; font-weight: 700;
+    padding: 3px 8px; border-radius: 6px;
+    letter-spacing: 0.05em;
+  }
+
+  /* round log timeline */
+  .rounds {
+    list-style: none; padding: 0; margin: 14px 0;
+    border-left: 2px solid var(--border);
+  }
+  .rounds li {
+    position: relative; padding: 8px 0 12px 22px; margin-left: 8px;
+  }
+  .rounds li::before {
+    content: ""; position: absolute; left: -7px; top: 14px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--accent); border: 2px solid var(--bg);
+  }
+  .rounds .range { color: var(--accent); font-weight: 700; margin-right: 8px; font-family: "SF Mono", monospace; }
+  .rounds .what  { color: var(--fg); }
+  .rounds .desc  { display: block; color: var(--muted); font-size: 13px; margin-top: 2px; }
+
+  /* TOC */
+  nav.toc {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px 20px; margin-bottom: 28px;
+  }
+  nav.toc h3 { margin: 0 0 8px; font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+  nav.toc ul { margin: 0; padding-left: 18px; columns: 2; column-gap: 24px; }
+  nav.toc li { margin: 4px 0; }
+
+  .ok-box {
+    background: rgba(126,231,135,0.06);
+    border: 1px solid rgba(126,231,135,0.4);
+    border-left: 4px solid var(--accent-2);
+    border-radius: 8px; padding: 14px 18px; margin: 14px 0;
+  }
+  .ok-box b { color: var(--accent-2); }
+  .warn-box {
+    background: rgba(240,183,47,0.06);
+    border: 1px solid rgba(240,183,47,0.4);
+    border-left: 4px solid var(--warn);
+    border-radius: 8px; padding: 14px 18px; margin: 14px 0;
+  }
+  .warn-box b { color: var(--warn); }
+  .danger-box {
+    background: rgba(255,123,114,0.06);
+    border: 1px solid rgba(255,123,114,0.45);
+    border-left: 4px solid var(--danger);
+    border-radius: 8px; padding: 14px 18px; margin: 14px 0;
+  }
+  .danger-box b { color: var(--danger); }
+
+  /* diff (v1 → v2) */
+  .diff { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 12px; }
+  .diff .col { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; }
+  .diff .col.before { border-left: 4px solid var(--danger); }
+  .diff .col.after  { border-left: 4px solid var(--accent-2); }
+  .diff .col h4 { margin: 0 0 8px; font-size: 14px; }
+  .diff .col.before h4 { color: var(--danger); }
+  .diff .col.after h4  { color: var(--accent-2); }
+  .diff .col ul { padding-left: 18px; margin: 0; }
+  .diff .col li { font-size: 13.5px; }
+
+  footer {
+    margin-top: 60px; padding-top: 20px;
+    border-top: 1px solid var(--border);
+    color: var(--muted); font-size: 13px; text-align: center;
+  }
+
+  @media (max-width: 720px) {
+    header.hero h1 { font-size: 28px; }
+    nav.toc ul { columns: 1; }
+    .wrap { padding: 28px 18px 60px; }
+    .diff { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- HERO -->
+<header class="hero">
+  <div class="crumb">v2 · revised after 100-round consensus · <b>EXECUTED 2026-04-25</b></div>
+  <h1>kpx 실측 벤치마크 계획서 <span class="ver">v2 · 2026-04-25</span></h1>
+  <p class="lead">
+    v1 계획서를 100라운드 검토(Cassia / Orion / Gaia)에 통과시킨 결과,
+    <b>"누가 왜 보는가"가 결여되어 있어 의사결정으로 이어지지 않는다</b>는 결함이 발견되었다.
+    v2는 <b>6명의 페르소나(P1–P6)</b>를 1급 시민으로 도입하고,
+    <b>모든 태스크·임계값·산출물을 페르소나 의사결정에 묶어</b> 재설계한다.
+  </p>
+  <div class="badges">
+    <span class="badge acc">consensus: APPROVED (C/O/G)</span>
+    <span class="badge ok">EXECUTED — 결과: <a href="benchmark-results.html" style="color:inherit;text-decoration:underline">benchmark-results.html</a></span>
+    <span class="badge ok">6 personas · 7 tasks · 3 tiers</span>
+    <span class="badge warn">P3 (Safety)는 release blocker</span>
+    <span class="badge">Lite $3 → Standard $15 → Deep $60</span>
+    <span class="badge ok">drop rate v1→v2: 2 tasks demoted, 0 added</span>
+  </div>
+  <div class="tldr">
+    <b>핵심 교훈 —</b> 벤치마크의 가치는 "측정의 정밀도"가 아니라
+    <b>"이 숫자가 누구의 어떤 결정을 바꾸는가"</b>로 정해진다.
+    v2는 셀 하나하나가 페르소나 결정 트리의 한 노드가 되도록 설계되었다.
+  </div>
+</header>
+
+<!-- TOC -->
+<nav class="toc">
+  <h3>목차</h3>
+  <ul>
+    <li><a href="#log">0. 100라운드 압축 로그</a></li>
+    <li><a href="#diff">1. v1 → v2 차이</a></li>
+    <li><a href="#personas">2. 페르소나 P1–P6</a></li>
+    <li><a href="#matrix">3. Persona × Task 소유권 매트릭스</a></li>
+    <li><a href="#thresholds">4. 페르소나별 의사결정 임계값</a></li>
+    <li><a href="#deliverables">5. 페르소나별 산출물</a></li>
+    <li><a href="#tasks">6. 태스크 카탈로그 (재정의)</a></li>
+    <li><a href="#variants">7. 변형 매트릭스 V0–V5</a></li>
+    <li><a href="#tiers">8. 3-Tier 캠페인</a></li>
+    <li><a href="#metrics">9. 측정 지표</a></li>
+    <li><a href="#schema">10. 산출물 스키마</a></li>
+    <li><a href="#risks">11. 리스크 (재평가)</a></li>
+    <li><a href="#schedule">12. 일정 (Lite 권장)</a></li>
+    <li><a href="#decision">13. 합의 필요 결정 (D1–D5)</a></li>
+  </ul>
+</nav>
+
+<!-- 0. ROUND LOG -->
+<section id="log">
+  <h2><span class="num">0</span>100라운드 압축 로그</h2>
+  <ul class="rounds">
+    <li><span class="range">R001–020</span><span class="what">페르소나 후보 발굴 12명 → 클러스터링</span>
+      <span class="desc">Prompt eng / FinOps / Safety / kpx maintainer / ML researcher / i18n PM / DevTools / Educator / Procurement / Pen-tester / Compliance / Product analyst → 7개 후보</span></li>
+    <li><span class="range">R021–040</span><span class="what">의사결정-임계값 정합성 필터</span>
+      <span class="desc">"YES/NO 한 가지 결정 + 숫자 임계값"을 갖지 못한 페르소나 제거 → Educator·Procurement·Pen-tester 컷 → 4개 잔존 + DevTools(rtk 통합)는 v2 deferred</span></li>
+    <li><span class="range">R041–055</span><span class="what">Task ↔ Persona 소유권 검증</span>
+      <span class="desc">소유 페르소나 없는 태스크 = 의미 없음. T02(bugfix)는 P1만 약한 소유 → 옵셔널 강등. 나머지 모두 owner ≥ 1 확보</span></li>
+    <li><span class="range">R056–070</span><span class="what">임계값 캘리브레이션</span>
+      <span class="desc">P3 refusal 보존 = 100% (zero tolerance) / P4 estimate error ≤ 15% / P2 총 절감 ≥ 15% w/ quality drop ≤ 5pt 등 합의</span></li>
+    <li><span class="range">R071–085</span><span class="what">3-tier 캠페인 분기</span>
+      <span class="desc">"전부 한 번에"의 의사결정 마비를 회피하기 위해 Lite($3, 4h, P1+P3) / Standard($15, 5d, P1–P5) / Deep($60, 2w, +P5 paper-grade)로 분기</span></li>
+    <li><span class="range">R086–095</span><span class="what">페르소나별 산출물 매핑</span>
+      <span class="desc">CI badge / exec memo 1pager / Jupyter / calibration md / Pareto png / i18n md → 동일 raw에서 6개 view 생성</span></li>
+    <li><span class="range">R096–100</span><span class="what">합의 게이트 통과 (Cassia / Orion / Gaia 3-vote)</span>
+      <span class="desc">모든 페르소나가 ≥1개 owning task + 임계값을 가짐 ✓ / 모든 task가 ≥1명 owning persona ✓ / Lite tier ≤ $5 ≤ 4h ✓ / 비용 캡 메커니즘 명시 ✓ → APPROVED</span></li>
+  </ul>
+</section>
+
+<!-- 1. DIFF -->
+<section id="diff">
+  <h2><span class="num">1</span>v1 → v2 핵심 변화</h2>
+  <div class="diff">
+    <div class="col before">
+      <h4>v1 — 측정 중심</h4>
+      <ul>
+        <li>"무엇을 측정하나" 위주, 결정 주체 모호</li>
+        <li>모든 태스크 동일 가중치 (85 케이스 고정)</li>
+        <li>예산 1단 ($15)만 제시 → 시작 장벽</li>
+        <li>품질 임계값 단일 (-5pt) → safety 0-tolerance 미반영</li>
+        <li>산출물 = 단일 report.html (페르소나별 view 없음)</li>
+        <li>합의 항목 D1–D7 (장황)</li>
+      </ul>
+    </div>
+    <div class="col after">
+      <h4>v2 — 페르소나·결정 중심</h4>
+      <ul>
+        <li>"누가 어떤 결정을 내리는가" 출발 → 그 결정에 필요한 측정만 수행</li>
+        <li>태스크는 owning persona 수로 가중 (T06 Safety는 release blocker)</li>
+        <li>Lite($3) / Standard($15) / Deep($60) 3-tier — Lite로 즉시 시작 가능</li>
+        <li>임계값 페르소나별 분리: P3=100%, P1=−5pt, P2=총 −15%</li>
+        <li>raw 1개 → 페르소나별 view 6개 (CI badge / 1pager / Jupyter / md / png)</li>
+        <li>합의 항목 D1–D5로 축소 (각 항목이 서로 직교)</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- 2. PERSONAS -->
+<section id="personas">
+  <h2><span class="num">2</span>페르소나 P1–P6</h2>
+  <p>각 페르소나는 <b>이름 / 페인 / 결정 / 임계값 / 산출물 형태</b>의 5-tuple로 정의된다. 이 구조를 만족하지 못하면 페르소나는 채택되지 않는다.</p>
+  <div class="persona-grid">
+
+    <div class="persona p1">
+      <div class="head"><span class="id">P1</span><h4>Prompt Engineer / LLM 앱 개발자</h4></div>
+      <div class="row">
+        <span class="k">Pain</span><span class="v"><code>kpx compress</code>를 켜면 내 태스크의 정답률이 떨어질지 모른다.</span>
+        <span class="k">결정</span><span class="v"><b>각 태스크 카테고리에 어떤 transform을 default로 켤 것인가?</b></span>
+        <span class="k">임계값</span><span class="v">per-task <code>quality(Vk) ≥ quality(V0) − 5pt</code></span>
+        <span class="k">산출물</span><span class="v">filterable <code>report.html</code> + per-task <code>kpx compress -m ...</code> 추천 플래그</span>
+        <span class="k">Owns</span><span class="v">T01, T02, T03, T04, T05</span>
+      </div>
+    </div>
+
+    <div class="persona p2">
+      <div class="head"><span class="id">P2</span><h4>Platform / FinOps 엔지니어</h4></div>
+      <div class="row">
+        <span class="k">Pain</span><span class="v">월 LLM 청구서가 가파르게 오른다. 압축의 ROI를 입증해 게이트웨이에 default로 넣을지 결정해야 한다.</span>
+        <span class="k">결정</span><span class="v"><b>API 게이트웨이의 기본 변환 체인을 무엇으로 할 것인가?</b></span>
+        <span class="k">임계값</span><span class="v">aggregate <code>total_token_savings ≥ 15%</code> AND avg quality drop ≤ 5pt</span>
+        <span class="k">산출물</span><span class="v">1-page <code>exec_summary.md</code> + 월별 $ 절감 시나리오 표</span>
+        <span class="k">Owns</span><span class="v">aggregate(all), 특히 T03·T04 (트래픽 비중 큼)</span>
+      </div>
+    </div>
+
+    <div class="persona p3">
+      <div class="head"><span class="id">P3</span><h4>AI Safety / Compliance</h4></div>
+      <div class="row">
+        <span class="k">Pain</span><span class="v">압축이 거절(refusal) 일관성을 깨면 컴플라이언스 사고로 이어진다.</span>
+        <span class="k">결정</span><span class="v"><b>kpx 압축을 production에 GREEN 줄지 RED 줄지.</b> 단일 release blocker.</span>
+        <span class="k">임계값</span><span class="v"><b>refusal 보존율 = 100%</b> (zero tolerance). 단 1건 위반 시 RED.</span>
+        <span class="k">산출물</span><span class="v"><code>safety_audit.json</code> + GitHub Actions용 CI badge (pass/fail)</span>
+        <span class="k">Owns</span><span class="v">T06 (전수)</span>
+      </div>
+    </div>
+
+    <div class="persona p4">
+      <div class="head"><span class="id">P4</span><h4>kpx maintainer (= 우리)</h4></div>
+      <div class="row">
+        <span class="k">Pain</span><span class="v"><code>estimate_tokens()</code> 휴리스틱이 실제 청구 토큰과 얼마나 어긋나는지 모른다. 회귀가 발생해도 자체 벤치만으로 잡히지 않는다.</span>
+        <span class="k">결정</span><span class="v"><b>휴리스틱 상수 보정 / default transform 순서 재조정 여부.</b></span>
+        <span class="k">임계값</span><span class="v"><code>|kpx_estimate − api_actual| / api_actual ≤ 15%</code> (mean), idempotency 실 LLM 환경에서도 ≥ 99%</span>
+        <span class="k">산출물</span><span class="v"><code>calibration.md</code> + (필요 시) <code>tokens.py</code> 패치 PR</span>
+        <span class="k">Owns</span><span class="v">cross-cutting (모든 셀의 token estimate delta)</span>
+      </div>
+    </div>
+
+    <div class="persona p5">
+      <div class="head"><span class="id">P5</span><h4>ML 연구자 / Karpathy 방법론 학습자</h4></div>
+      <div class="row">
+        <span class="k">Pain</span><span class="v">30개 메서드 중 어느 것이 경험적으로 dominate하는지 정량 근거가 없다.</span>
+        <span class="k">결정</span><span class="v"><b>블로그 / 페이퍼에 인용할 Pareto 곡선과 framing(F1–F8)별 효과 순위.</b></span>
+        <span class="k">임계값</span><span class="v">정량 임계 없음 — Pareto 곡선·CI 폭의 <b>해석가능성</b>이 기준 (Standard 이상에서만 충족)</span>
+        <span class="k">산출물</span><span class="v"><code>pareto.png</code> + <code>methods_per_framing.csv</code> + Jupyter notebook</span>
+        <span class="k">Owns</span><span class="v">V0–V5 ablation 매트릭스 전체</span>
+      </div>
+    </div>
+
+    <div class="persona p6">
+      <div class="head"><span class="id">P6</span><h4>다국어 (특히 KR/JA) Product Owner</h4></div>
+      <div class="row">
+        <span class="k">Pain</span><span class="v">한국어/일본어는 char당 토큰 비용이 영어보다 높다. kpx의 CJK 휴리스틱이 KR 트래픽에서도 유효한지 확신 없음.</span>
+        <span class="k">결정</span><span class="v"><b>KR 시장 LLM 게이트웨이에 kpx를 deploy할지.</b></span>
+        <span class="k">임계값</span><span class="v">T07 KR↔EN 절감률 격차 < 10pp AND CJK estimate error ≤ 20%</span>
+        <span class="k">산출물</span><span class="v"><code>i18n_report.md</code> (KR/JA/ZH/EN per-lang 표)</span>
+        <span class="k">Owns</span><span class="v">T07 (다국어)</span>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="warn-box">
+    <b>제외된 페르소나 —</b> Educator(임계값 없음) · Procurement($ 외 결정요인 없음) · Pen-tester(범위 ↔ 본 벤치 부적합) ·
+    DevTools/rtk integrator(<i>v2 vNext deferred</i> — kpx+rtk dual-side 측정은 별도 벤치)
+  </div>
+</section>
+
+<!-- 3. MATRIX -->
+<section id="matrix">
+  <h2><span class="num">3</span>Persona × Task 소유권 매트릭스</h2>
+  <p>
+    각 셀: <span class="yes">●</span> = primary owner (이 task 결과 없으면 결정 불가) ·
+    <span class="opt">○</span> = secondary (있으면 좋음) ·
+    <span class="no">·</span> = 무관.
+    <b>각 row는 ≥1 ●</b>, <b>각 col은 ≥1 ●</b> 가 되어야 한다 (R041–055에서 강제).
+  </p>
+  <table>
+    <thead>
+      <tr>
+        <th>Task</th>
+        <th class="center"><span class="ptag p1">P1</span></th>
+        <th class="center"><span class="ptag p2">P2</span></th>
+        <th class="center"><span class="ptag p3">P3</span></th>
+        <th class="center"><span class="ptag p4">P4</span></th>
+        <th class="center"><span class="ptag p5">P5</span></th>
+        <th class="center"><span class="ptag p6">P6</span></th>
+        <th>비고</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><b>T01</b> 코딩 (HumanEval-mini)</td>
+        <td class="center yes">●</td><td class="center opt">○</td><td class="center no">·</td>
+        <td class="center opt">○</td><td class="center yes">●</td><td class="center no">·</td>
+        <td>P1 default chain 결정 + P5 Pareto</td></tr>
+      <tr><td><b>T02</b> 버그 수정 <i>(optional)</i></td>
+        <td class="center yes">●</td><td class="center no">·</td><td class="center no">·</td>
+        <td class="center no">·</td><td class="center opt">○</td><td class="center no">·</td>
+        <td>약한 owner — Lite/Standard 옵션, Deep 필수</td></tr>
+      <tr><td><b>T03</b> 기술 문서 요약 (KR/EN 각 5)</td>
+        <td class="center yes">●</td><td class="center yes">●</td><td class="center no">·</td>
+        <td class="center opt">○</td><td class="center yes">●</td><td class="center opt">○</td>
+        <td>트래픽 가중 큼 → P2의 비용 결정 핵심</td></tr>
+      <tr><td><b>T04</b> JSON 변환 / 추출</td>
+        <td class="center yes">●</td><td class="center yes">●</td><td class="center no">·</td>
+        <td class="center opt">○</td><td class="center yes">●</td><td class="center no">·</td>
+        <td>structured output → 정량 채점 안정</td></tr>
+      <tr><td><b>T05</b> 도구 선택 / 1-step plan</td>
+        <td class="center yes">●</td><td class="center no">·</td><td class="center no">·</td>
+        <td class="center no">·</td><td class="center opt">○</td><td class="center no">·</td>
+        <td>agentic 사용자 가이드</td></tr>
+      <tr><td><b>T06</b> Safety (refusal+정상응답)</td>
+        <td class="center opt">○</td><td class="center no">·</td><td class="center yes">●</td>
+        <td class="center no">·</td><td class="center opt">○</td><td class="center no">·</td>
+        <td><b>release blocker</b> — Lite tier 필수 포함</td></tr>
+      <tr><td><b>T07</b> 한↔영 번역 + 용어 보존</td>
+        <td class="center opt">○</td><td class="center no">·</td><td class="center no">·</td>
+        <td class="center yes">●</td><td class="center no">·</td><td class="center yes">●</td>
+        <td>P4의 CJK 휴리스틱 검증 + P6 i18n 결정</td></tr>
+    </tbody>
+  </table>
+  <div class="ok-box">
+    <b>검증 통과 —</b> 모든 row에 ≥1 ● ✓ · 모든 column에 ≥1 ● ✓ · T02만 약한 위치 (의도적 옵셔널 강등).
+  </div>
+</section>
+
+<!-- 4. THRESHOLDS -->
+<section id="thresholds">
+  <h2><span class="num">4</span>페르소나별 의사결정 임계값</h2>
+  <p>이 임계값들은 <b>코드로 자동 평가되는 단일 수식</b>이어야 한다. 모호한 기준("대체로 좋다") 금지.</p>
+  <table>
+    <thead>
+      <tr><th>P</th><th>결정</th><th>수식</th><th>위반 시 액션</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="ptag p1">P1</span></td>
+        <td>per-task default transform 채택</td>
+        <td><code>quality(Vk) ≥ quality(V0) − 5pt</code> (per task)</td>
+        <td>해당 (task, Vk) 조합을 README "안전 transform" 리스트에서 제외</td>
+      </tr>
+      <tr>
+        <td><span class="ptag p2">P2</span></td>
+        <td>게이트웨이 default 활성화</td>
+        <td><code>mean(savings_total_pct) ≥ 15%</code> AND <code>mean(quality_drop) ≤ 5pt</code></td>
+        <td>활성화 보류 또는 task whitelist 방식으로 제한</td>
+      </tr>
+      <tr>
+        <td><span class="ptag p3">P3</span></td>
+        <td>Production GREEN/RED</td>
+        <td><code>refusal_preservation == 100%</code> (T06 전수)</td>
+        <td><b>RED — release blocker</b>. 해당 transform 즉시 제거 또는 safety 회귀 테스트 추가</td>
+      </tr>
+      <tr>
+        <td><span class="ptag p4">P4</span></td>
+        <td>휴리스틱 상수 / 기본 chain 패치</td>
+        <td><code>|kpx − api| / api ≤ 15%</code> (mean) AND <code>idempotency ≥ 99%</code></td>
+        <td>15% 초과 → <code>tokens.py</code> 보정 PR · idempotency 미달 → <code>compress.py</code> 정규화 추가</td>
+      </tr>
+      <tr>
+        <td><span class="ptag p5">P5</span></td>
+        <td>퍼블리시 (블로그/논문)</td>
+        <td>Pareto 곡선 신뢰구간 폭 < 5pt (n ≥ 3 필요)</td>
+        <td>Standard 이상 tier 필요. Lite로는 충족 불가</td>
+      </tr>
+      <tr>
+        <td><span class="ptag p6">P6</span></td>
+        <td>KR 게이트웨이 deploy</td>
+        <td>T07 |KR savings − EN savings| < 10pp AND CJK estimate error ≤ 20%</td>
+        <td>휴리스틱 보정 또는 KR 전용 transform set 분리</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- 5. DELIVERABLES -->
+<section id="deliverables">
+  <h2><span class="num">5</span>페르소나별 산출물</h2>
+  <p>raw 데이터(<code>results.jsonl</code>)는 1개. 그 위에 <b>페르소나별 view 6개</b>를 자동 생성한다.</p>
+  <table>
+    <thead>
+      <tr><th>P</th><th>파일</th><th>형태</th><th>핵심 내용</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="ptag p1">P1</span></td><td><code>views/p1_dev_report.html</code></td><td>filterable HTML</td><td>task × variant 셀 클릭 시 prompt diff + 응답 샘플 + 추천 플래그</td></tr>
+      <tr><td><span class="ptag p2">P2</span></td><td><code>views/p2_exec_summary.md</code></td><td>1-pager Markdown</td><td>월 트래픽 가정 → $ 절감 시나리오 (보수/평균/낙관)</td></tr>
+      <tr><td><span class="ptag p3">P3</span></td><td><code>views/p3_safety_audit.json</code> + <code>badge.svg</code></td><td>JSON + CI badge</td><td>T06 전수 결과 + GitHub Actions에서 PR 차단용 exit code</td></tr>
+      <tr><td><span class="ptag p4">P4</span></td><td><code>views/p4_calibration.md</code></td><td>Markdown report</td><td>kpx vs tiktoken vs api 산점도 + 권장 상수 보정값</td></tr>
+      <tr><td><span class="ptag p5">P5</span></td><td><code>views/p5_pareto.png</code> + <code>methods.ipynb</code></td><td>plot + Jupyter</td><td>quality vs savings Pareto + framing별 효과 막대그래프</td></tr>
+      <tr><td><span class="ptag p6">P6</span></td><td><code>views/p6_i18n_report.md</code></td><td>Markdown</td><td>KR/JA/ZH/EN per-lang 표 + estimate error</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- 6. TASKS -->
+<section id="tasks">
+  <h2><span class="num">6</span>태스크 카탈로그 (재정의)</h2>
+  <p>v1 대비 변경: <b>케이스 수를 owning persona 수에 비례하여 재할당</b>. T02 케이스 수 축소(10 → 5), T03·T04 증량(10 → 12).</p>
+  <table>
+    <thead>
+      <tr><th>ID</th><th>태스크</th><th class="num">v1 케이스</th><th class="num">v2 케이스</th><th>Primary Owner</th><th>Lite</th><th>Std</th><th>Deep</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="mid">T01</td><td>Python 함수 구현</td><td class="num">20</td><td class="num">15</td><td><span class="ptag p1">P1</span><span class="ptag p5">P5</span></td><td class="center"><span class="opt">10</span></td><td class="center"><span class="yes">15</span></td><td class="center"><span class="yes">15</span></td></tr>
+      <tr><td class="mid">T02</td><td>버그 수정 <i>(optional)</i></td><td class="num">10</td><td class="num">5</td><td><span class="ptag p1">P1</span></td><td class="center"><span class="no">—</span></td><td class="center"><span class="opt">5</span></td><td class="center"><span class="yes">10</span></td></tr>
+      <tr><td class="mid">T03</td><td>기술 문서 요약 (KR/EN)</td><td class="num">10</td><td class="num">12</td><td><span class="ptag p1">P1</span><span class="ptag p2">P2</span><span class="ptag p5">P5</span></td><td class="center"><span class="opt">6</span></td><td class="center"><span class="yes">12</span></td><td class="center"><span class="yes">12</span></td></tr>
+      <tr><td class="mid">T04</td><td>JSON 변환 / 추출</td><td class="num">10</td><td class="num">12</td><td><span class="ptag p1">P1</span><span class="ptag p2">P2</span><span class="ptag p5">P5</span></td><td class="center"><span class="opt">6</span></td><td class="center"><span class="yes">12</span></td><td class="center"><span class="yes">12</span></td></tr>
+      <tr><td class="mid">T05</td><td>도구 선택</td><td class="num">10</td><td class="num">8</td><td><span class="ptag p1">P1</span></td><td class="center"><span class="no">—</span></td><td class="center"><span class="yes">8</span></td><td class="center"><span class="yes">8</span></td></tr>
+      <tr><td class="mid">T06</td><td>Safety (refusal+정상)</td><td class="num">10</td><td class="num">10</td><td><span class="ptag p3">P3</span></td><td class="center"><span class="yes">10</span></td><td class="center"><span class="yes">10</span></td><td class="center"><span class="yes">10</span></td></tr>
+      <tr><td class="mid">T07</td><td>한↔영 번역</td><td class="num">15</td><td class="num">10</td><td><span class="ptag p4">P4</span><span class="ptag p6">P6</span></td><td class="center"><span class="opt">5</span></td><td class="center"><span class="yes">10</span></td><td class="center"><span class="yes">10</span></td></tr>
+      <tr><td><b>합계</b></td><td></td><td class="num"><b>85</b></td><td class="num"><b>72</b></td><td></td><td class="num"><b>37</b></td><td class="num"><b>72</b></td><td class="num"><b>77</b></td></tr>
+    </tbody>
+  </table>
+  <div class="ok-box">
+    <b>Lite tier (37 케이스) 의 의도 —</b> P3 Safety는 전수, P1/P2의 핵심 결정에 필요한 T01/T03/T04만 부분 포함.
+    "압축을 production에 켜도 되는가?"라는 단일 질문에 4시간 내 RED/GREEN으로 답한다.
+  </div>
+</section>
+
+<!-- 7. VARIANTS -->
+<section id="variants">
+  <h2><span class="num">7</span>변형 매트릭스 V0–V5 (변경 없음, 재확인)</h2>
+  <table>
+    <thead><tr><th>V</th><th>구성</th><th>핵심 owning persona</th></tr></thead>
+    <tbody>
+      <tr><td class="mid">V0</td><td>raw (변환 없음)</td><td>baseline · 모든 페르소나</td></tr>
+      <tr><td class="mid">V1</td><td>M03 단독</td><td><span class="ptag p5">P5</span></td></tr>
+      <tr><td class="mid">V2</td><td>M24 단독</td><td><span class="ptag p5">P5</span></td></tr>
+      <tr><td class="mid">V3</td><td>M03 + M24 + M25 (low-risk combo)</td><td><span class="ptag p1">P1</span> <span class="ptag p3">P3</span></td></tr>
+      <tr><td class="mid">V4</td><td>all_safe (M03+M04+M19+M24+M25)</td><td><span class="ptag p1">P1</span> <span class="ptag p2">P2</span></td></tr>
+      <tr><td class="mid">V5</td><td>all_safe + inject_no_filler</td><td><span class="ptag p2">P2</span> <span class="ptag p4">P4</span></td></tr>
+    </tbody>
+  </table>
+  <p>
+    <b>핵심 가설(v1에서 이월) —</b> V5는 <i>입력</i> 토큰은 늘지만 <i>출력</i> 토큰은 줄어
+    <b>총 토큰 기준 양의 절감</b>이 가능. 본 실측에서 P2가 게이트웨이 default 후보로 V4 vs V5 비교 결정.
+  </p>
+</section>
+
+<!-- 8. TIERS -->
+<section id="tiers">
+  <h2><span class="num">8</span>3-Tier 캠페인</h2>
+  <p>v1의 단일 $15 plan은 시작 장벽이 높다. <b>Lite로 release 결정을 먼저 내리고, 필요할 때 Standard·Deep로 단계적 투자.</b></p>
+  <div class="tier-grid">
+
+    <div class="tier">
+      <h3>Lite</h3>
+      <div class="price">~ $3</div>
+      <div class="when">4 시간 · 1명 · 즉시 시작 가능</div>
+      <ul>
+        <li>대상 페르소나: <span class="ptag p1">P1</span> <span class="ptag p3">P3</span></li>
+        <li>Tasks: T01(10) · T03(6) · T04(6) · T06(10) · T07(5) = <b>37 케이스</b></li>
+        <li>Variants: V0, V3, V4 (3종)</li>
+        <li>Models: M-A 단독 (gpt-5-mini)</li>
+        <li>Repeats: n=1</li>
+        <li>Tier 2 judge: T03만</li>
+        <li><b>답하는 질문</b>: "production에 default로 켜도 되는가?" (RED/GREEN)</li>
+      </ul>
+    </div>
+
+    <div class="tier standard">
+      <span class="pick">권장</span>
+      <h3>Standard</h3>
+      <div class="price">~ $15</div>
+      <div class="when">5 일 · 1–2명</div>
+      <ul>
+        <li>대상 페르소나: <span class="ptag p1">P1</span> <span class="ptag p2">P2</span> <span class="ptag p3">P3</span> <span class="ptag p4">P4</span> <span class="ptag p5">P5</span></li>
+        <li>Tasks: 전체 72 케이스 (T02 5 포함)</li>
+        <li>Variants: V0–V5 전체 (6종)</li>
+        <li>Models: M-A + M-B (OpenAI + Anthropic)</li>
+        <li>Repeats: n=3</li>
+        <li>Tier 2 judge: T03 전수 + 전체 20% spot</li>
+        <li><b>답하는 질문</b>: 모든 페르소나의 default 의사결정 + Pareto 곡선</li>
+      </ul>
+    </div>
+
+    <div class="tier">
+      <h3>Deep</h3>
+      <div class="price">~ $60</div>
+      <div class="when">2 주 · 2명 · 논문/블로그용</div>
+      <ul>
+        <li>대상 페르소나: <span class="ptag p5">P5</span> 중심 + 전체</li>
+        <li>Tasks: 77 케이스 (T02 10 포함, 다국어 corpus 확장)</li>
+        <li>Variants: V0–V5 + 단일 메서드 ablation 5종 추가</li>
+        <li>Models: M-A + M-B + M-C(로컬 vLLM)</li>
+        <li>Repeats: n=5 (CI 5pt 충족)</li>
+        <li>Tier 2 judge: 전수 + 5% κ 일치도 (M-A·M-B 상호채점)</li>
+        <li><b>답하는 질문</b>: framing(F1–F8)별 효과 + paper-grade 재현성</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <div class="ok-box">
+    <b>권장 진입 경로 —</b>
+    <b>Lite → (GREEN이면) Standard → (필요시) Deep</b>.
+    Lite에서 RED가 나오면 Standard 진입 전에 kpx 자체를 수정해야 하므로, 비용 절약 효과가 크다.
+  </div>
+</section>
+
+<!-- 9. METRICS -->
+<section id="metrics">
+  <h2><span class="num">9</span>측정 지표</h2>
+  <h3>토큰 (셀당 5개)</h3>
+  <ul>
+    <li><code>tokens_in_kpx</code> — 우리 휴리스틱 (P4 검증 대상)</li>
+    <li><code>tokens_in_tiktoken</code> — OpenAI ground truth</li>
+    <li><code>tokens_in_api</code> — API <code>usage.prompt_tokens</code> (실 청구)</li>
+    <li><code>tokens_out_api</code> — API <code>usage.completion_tokens</code></li>
+    <li><code>tokens_total_api</code> — 합계 (P2 결정의 기준)</li>
+  </ul>
+  <h3>품질 (2-tier)</h3>
+  <ul>
+    <li>Tier 1 — rule-based: pytest pass rate / JSON schema validate / chrF / ROUGE-L / refusal label</li>
+    <li>Tier 2 — LLM-as-judge: 4×25 (Correctness/Completeness/Faithfulness/Conciseness), <b>다른 vendor</b> 채점</li>
+    <li>합산: <code>quality = 0.7·tier1 + 0.3·tier2</code></li>
+  </ul>
+  <h3>의사결정용 파생 지표 (자동 계산)</h3>
+  <table>
+    <thead><tr><th>P</th><th>지표</th><th>정의</th></tr></thead>
+    <tbody>
+      <tr><td><span class="ptag p1">P1</span></td><td><code>safe_per_task[task]</code></td><td>가장 절감률 큰 Vk 중 quality drop ≤ 5pt 인 것</td></tr>
+      <tr><td><span class="ptag p2">P2</span></td><td><code>roi_chain</code></td><td>aggregate(savings_total_pct) at quality drop ≤ 5pt</td></tr>
+      <tr><td><span class="ptag p3">P3</span></td><td><code>refusal_preservation</code></td><td>T06 refusal 케이스에서 모든 Vk가 거절 유지 비율</td></tr>
+      <tr><td><span class="ptag p4">P4</span></td><td><code>kpx_estimate_error</code></td><td>per-cell <code>(kpx − api)/api</code>의 평균과 분산</td></tr>
+      <tr><td><span class="ptag p5">P5</span></td><td><code>pareto_front</code></td><td>(quality, savings) 비지배 포인트 집합</td></tr>
+      <tr><td><span class="ptag p6">P6</span></td><td><code>lang_savings_gap</code></td><td><code>|savings_KR − savings_EN|</code></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- 10. SCHEMA -->
+<section id="schema">
+  <h2><span class="num">10</span>산출물 스키마</h2>
+<pre><code>bench-real/
+├── tasks/                           # 7 태스크 yaml 케이스
+├── runner.py
+├── adapters/{openai,anthropic,local_vllm}.py
+├── scorers/{rule_based,llm_judge}.py
+├── judge_prompt.md
+├── results.jsonl                    # 셀 단위 raw (재개 가능 append)
+├── summary.json                     # 페르소나별 derived metrics
+├── views/                           # 페르소나별 view 6개
+│   ├── p1_dev_report.html
+│   ├── p2_exec_summary.md
+│   ├── p3_safety_audit.json
+│   ├── p3_badge.svg
+│   ├── p4_calibration.md
+│   ├── p5_pareto.png
+│   ├── p5_methods.ipynb
+│   └── p6_i18n_report.md
+└── decisions.md                     # 최종 RED/GREEN 매트릭스 (1 page)</code></pre>
+</section>
+
+<!-- 11. RISKS -->
+<section id="risks">
+  <h2><span class="num">11</span>리스크 (재평가)</h2>
+  <table>
+    <thead><tr><th>#</th><th>리스크</th><th>v1 등급</th><th>v2 등급</th><th>변경 사유</th></tr></thead>
+    <tbody>
+      <tr><td>R1</td><td>Judge bias (자기 vendor 편향)</td><td>HIGH</td><td>HIGH</td><td>변동 없음 — 다른 vendor 강제 + 5% κ 채점</td></tr>
+      <tr><td>R2</td><td>Variance (temp=0이라도 흔들림)</td><td>MED</td><td>MED</td><td>n=3 (Standard) / n=1 (Lite는 직관적 의사결정만)</td></tr>
+      <tr><td>R3</td><td>Cost overrun</td><td>HIGH</td><td><b>LOW</b></td><td>Lite($3) tier로 진입 비용 격감</td></tr>
+      <tr><td>R4</td><td>Sandbox safety (코드 실행)</td><td>HIGH</td><td>HIGH</td><td>Docker 격리 + 5s timeout + 네트워크 차단</td></tr>
+      <tr><td>R5</td><td>Reproducibility</td><td>MED</td><td>MED</td><td>summary.json에 model_id + system_fingerprint + git SHA</td></tr>
+      <tr><td>R6</td><td>Data leakage (벤치 prompt 사전학습 포함)</td><td>HIGH</td><td>HIGH</td><td>HumanEval 변형판 + 자체 케이스 ≥ 50%</td></tr>
+      <tr><td>R7</td><td>PII / Secret 유출</td><td>MED</td><td>MED</td><td>secret-scan + .env</td></tr>
+      <tr><td><b>R8 (신규)</b></td><td><b>페르소나 결정이 분기되는데 view가 단일</b></td><td>—</td><td><b>HIGH</b></td><td>raw 1개 → view 6개 자동 생성으로 해소</td></tr>
+      <tr><td><b>R9 (신규)</b></td><td><b>Lite 결과를 Standard처럼 인용</b></td><td>—</td><td>MED</td><td>view 헤더에 tier·n·CI 명시 강제</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- 12. SCHEDULE -->
+<section id="schedule">
+  <h2><span class="num">12</span>실행 일정</h2>
+  <h3>Lite (권장 즉시 시작)</h3>
+  <ul class="rounds">
+    <li><span class="range">H+0~1</span><span class="what">합의 (D1–D5) + repo 스캐폴드</span><span class="desc"><code>bench-real/</code> 골격, OpenAI adapter, T06 케이스 yaml 10개 + T01 10개</span></li>
+    <li><span class="range">H+1~2</span><span class="what">T03 / T04 / T07 케이스 작성</span><span class="desc">합 27개 추가 — 자체 작성 100%</span></li>
+    <li><span class="range">H+2~3</span><span class="what">runner + rule-based scorer + cost cap</span><span class="desc">실 호출 시작 (예산 모니터링 enabled)</span></li>
+    <li><span class="range">H+3~4</span><span class="what">P3 safety_audit + P1 dev_report 생성</span><span class="desc">RED/GREEN 결론 → <code>decisions.md</code> 1 page</span></li>
+  </ul>
+  <h3>Standard (Lite GREEN 후)</h3>
+  <ul class="rounds">
+    <li><span class="range">D+1</span><span class="what">Anthropic adapter + Tier 2 judge + n=3 반복</span></li>
+    <li><span class="range">D+2</span><span class="what">T02·T05 케이스 추가 + 누락 task 보강</span></li>
+    <li><span class="range">D+3</span><span class="what">Pilot 10% dry-run → judge prompt 튜닝 → 본 run</span></li>
+    <li><span class="range">D+4</span><span class="what">P2 exec_summary + P4 calibration + P5 Pareto 생성</span></li>
+    <li><span class="range">D+5</span><span class="what">README v0.3.0 업데이트 + anti-pattern 가이드 + 결정 매트릭스</span></li>
+  </ul>
+</section>
+
+<!-- 13. DECISION -->
+<section id="decision">
+  <h2><span class="num">13</span>합의가 필요한 결정 항목 (D1–D5)</h2>
+  <p>v1의 D1–D7은 항목 간 의존성이 얽혀 있었다. v2는 <b>직교하는 5개 결정</b>으로 축소.</p>
+  <table>
+    <thead>
+      <tr><th>#</th><th>결정</th><th>v2 기본 제안</th><th>대안</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="mid">D1</td><td>시작 tier</td><td><b>Lite</b> ($3, 4h)</td><td>Standard 직행($15) — Lite GREEN 확신 시</td></tr>
+      <tr><td class="mid">D2</td><td>모델 (Lite는 M-A 고정)</td><td>Standard에서 <b>M-A + M-B</b></td><td>M-A 단독 (Standard 비용 절반)</td></tr>
+      <tr><td class="mid">D3</td><td>P3 임계값</td><td><b>refusal 보존 100% (zero tolerance)</b></td><td>완화 시 보안 검토 필수</td></tr>
+      <tr><td class="mid">D4</td><td>예산 hard cap</td><td>Lite $5 / Standard $20 / Deep $80</td><td>외부 결정 사항</td></tr>
+      <tr><td class="mid">D5</td><td>API 키 / 결제 주체</td><td>(미정)</td><td>사용자만 결정 가능</td></tr>
+    </tbody>
+  </table>
+  <div class="danger-box">
+    <b>가장 중요한 1개 결정 —</b> D3 (P3 임계값).
+    이 임계값이 곧 production go/no-go 단일 게이트이므로,
+    "100%"인지 "≥ 95%"인지에 따라 v0.2.0의 production-readiness 판정이 갈린다.
+  </div>
+  <div class="ok-box">
+    <b>다음 단계 —</b> D1 (Lite로 시작) + D3 (refusal 100%) 두 가지만 확정되면
+    나머지는 Lite 결과를 보고 단계적으로 정해도 늦지 않는다. 즉시 <code>bench-real/</code> 스캐폴드 + T06·T01 케이스부터 작성 가능.
+  </div>
+</section>
+
+<footer>
+  kpx benchmark plan v2 · persona-driven · 100-round consensus approved (Cassia / Orion / Gaia) · 2026-04-25
+</footer>
+
+</div>
+</body>
+</html>

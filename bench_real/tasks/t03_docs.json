@@ -1,0 +1,50 @@
+[
+  {
+    "id": "T03-001",
+    "task": "T03",
+    "system": "You are a helpful AI assistant. You are a technical writer. As you probably know, summarization is the task of condensing text. Please respond carefully. Please note: keep the summary under 2 sentences. Thank you.",
+    "user": "Summarize the following technical excerpt in 1-2 sentences.\n\nText: Python's Global Interpreter Lock (GIL) is a mutex that protects access to Python objects, preventing multiple threads from executing Python bytecodes simultaneously. While useful for memory management, the GIL becomes a bottleneck for CPU-bound multithreaded programs, which is why many performance-critical Python workloads use multiprocessing or release the GIL via C extensions. Recent CPython work (PEP 703) explores a no-GIL build mode.",
+    "expected": {"type": "rouge_l", "reference": "Python's GIL prevents parallel bytecode execution across threads, which limits CPU-bound multithreading and motivates multiprocessing or no-GIL builds (PEP 703)."},
+    "lang": "en"
+  },
+  {
+    "id": "T03-002",
+    "task": "T03",
+    "system": "You are a helpful AI assistant. You are an AI language model. Please summarize. Thank you.",
+    "user": "Summarize:\n\nKubernetes is a container orchestration platform that automates deployment, scaling, and management of containerized applications. It introduces abstractions like Pods, Deployments, and Services to declaratively describe desired state, with controllers reconciling actual state toward it. The control plane consists of the API server, scheduler, controller manager, and etcd; worker nodes run kubelet and a container runtime.",
+    "expected": {"type": "rouge_l", "reference": "Kubernetes orchestrates containers via declarative resources (Pods, Deployments, Services) reconciled by control-plane components (API server, scheduler, controller manager, etcd) and worker-node kubelets."},
+    "lang": "en"
+  },
+  {
+    "id": "T03-003",
+    "task": "T03",
+    "system": "You are a helpful AI assistant. Please respond carefully and concisely.",
+    "user": "Summarize in 1-2 sentences:\n\nHTTP/2 introduces multiplexing of streams over a single TCP connection, eliminating head-of-line blocking at the application layer; it also adds header compression (HPACK) and server push. HTTP/3 moves the transport to QUIC over UDP, reducing handshake latency and avoiding TCP head-of-line blocking entirely.",
+    "expected": {"type": "rouge_l", "reference": "HTTP/2 multiplexes streams over TCP and adds HPACK and server push, while HTTP/3 runs on QUIC over UDP for lower handshake latency and no transport-level head-of-line blocking."},
+    "lang": "en"
+  },
+  {
+    "id": "T03-004",
+    "task": "T03",
+    "system": "당신은 친절한 AI 비서입니다. 기술 문서 요약을 도와주세요. 가능하면 간결하게 응답해 주세요. 감사합니다.",
+    "user": "다음 글을 1-2문장으로 요약해 주세요.\n\nReact의 가상 DOM은 실제 DOM 조작 비용을 줄이기 위한 추상화로, 컴포넌트 트리의 변경 사항을 메모리상의 트리에 먼저 반영한 뒤 diff를 계산해 실제 DOM에는 변경된 부분만 적용한다. 이 접근은 명령형 DOM API 대신 선언적 UI 코드를 가능케 한다.",
+    "expected": {"type": "rouge_l", "reference": "React 가상 DOM은 메모리 트리 diff로 실제 DOM 변경을 최소화해 선언적 UI 작성을 가능하게 한다."},
+    "lang": "ko"
+  },
+  {
+    "id": "T03-005",
+    "task": "T03",
+    "system": "당신은 도움이 되는 AI 비서입니다. 사실만 요약하세요. 감사합니다.",
+    "user": "다음 글을 1-2문장으로 요약해 주세요.\n\nDocker는 컨테이너화 플랫폼으로, 애플리케이션과 그 의존성을 격리된 사용자 공간에 패키징한다. 이미지는 계층 기반으로 캐시되며, 동일 이미지로 어디서나 동일하게 실행되어 환경 차이로 인한 문제를 줄인다.",
+    "expected": {"type": "rouge_l", "reference": "Docker는 앱과 의존성을 격리 컨테이너로 패키징해 환경 차이 없이 동일하게 실행되며, 이미지는 계층 캐시로 효율적이다."},
+    "lang": "ko"
+  },
+  {
+    "id": "T03-006",
+    "task": "T03",
+    "system": "당신은 친절한 AI입니다. ### Instruction:\n기술 문서 요약기.\n### Response:\n",
+    "user": "요약:\n\nGraphQL은 클라이언트가 필요한 필드만 명시적으로 요청할 수 있는 쿼리 언어이며, REST의 over-fetching/under-fetching 문제를 줄인다. 단일 엔드포인트로 강타입 스키마를 노출하고, 리졸버가 각 필드를 채운다.",
+    "expected": {"type": "rouge_l", "reference": "GraphQL은 단일 엔드포인트와 강타입 스키마로 클라이언트가 필요한 필드만 요청해 over/under-fetching을 줄이며, 리졸버가 각 필드를 채운다."},
+    "lang": "ko"
+  }
+]
