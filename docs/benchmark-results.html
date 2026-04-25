@@ -115,7 +115,7 @@
   <div class="pillrow">
     <span class="pill acc">3-track</span>
     <span class="pill ok">300 + 111 + 90 round</span>
-    <span class="pill ok">+21.36% / +20.95% / −8.36% 토큰 절감</span>
+    <span class="pill ok">+21.28% / +20.95% / −8.36% 토큰 절감</span>
     <span class="pill ok">코드 보존 불변수 100%</span>
     <span class="pill ok">B13 버그 발견·수정</span>
     <span class="pill ok">43/43 tests pass</span>
@@ -198,34 +198,39 @@
     <li>출력: <code>bench_real/legacy/results.json</code> + stdout 집계</li>
   </ul>
 
-  <h3>총괄 결과 (v0.2.0)</h3>
+  <h3>총괄 결과 (v0.2.0 + R5 재실행 2026-04-26)</h3>
   <div class="grid g4">
     <div class="stat"><div class="v acc">300</div><div class="l">총 round</div></div>
     <div class="stat"><div class="v ok">0</div><div class="l">errors</div></div>
     <div class="stat"><div class="v ok">0</div><div class="l">safety violations</div></div>
     <div class="stat"><div class="v ok">2 / 300</div><div class="l">non-idempotent (0.7%)</div></div>
   </div>
+  <div class="legend" style="margin-top:8px">
+    <b>R5 재실행 노트</b> — B13 fix 적용 후 M25 계열 수치가 미세 조정됨:
+    all_safe 21.36% → <b>21.28%</b>, M25 5.55% → 5.47%, M04+M25 6.04% → 5.97%, inject+all −63.26% → −63.34%.
+    안전성·멱등성 지표(0/0/2)는 동일 — 회귀 없음.
+  </div>
 
   <h3>변환별 평균 절감율</h3>
   <div class="panel tight">
     <div class="bar-row"><span class="label">all_safe</span>
-      <div class="bar"><span style="width:21.36%"></span></div>
-      <span class="val pos" style="color:var(--ok)">+21.36%</span></div>
+      <div class="bar"><span style="width:21.28%"></span></div>
+      <span class="val pos" style="color:var(--ok)">+21.28%</span></div>
     <div class="bar-row"><span class="label">M03 + M24</span>
       <div class="bar"><span style="width:9.30%"></span></div>
       <span class="val">+9.30%</span></div>
     <div class="bar-row"><span class="label">M24</span>
       <div class="bar"><span style="width:6.07%"></span></div>
       <span class="val">+6.07%</span></div>
-    <div class="bar-row"><span class="label">M04 + M25</span>
-      <div class="bar"><span style="width:6.04%"></span></div>
-      <span class="val">+6.04%</span></div>
     <div class="bar-row"><span class="label">M19</span>
       <div class="bar"><span style="width:6.01%"></span></div>
       <span class="val">+6.01%</span></div>
+    <div class="bar-row"><span class="label">M04 + M25</span>
+      <div class="bar"><span style="width:5.97%"></span></div>
+      <span class="val">+5.97%</span></div>
     <div class="bar-row"><span class="label">M25</span>
-      <div class="bar"><span style="width:5.55%"></span></div>
-      <span class="val">+5.55%</span></div>
+      <div class="bar"><span style="width:5.47%"></span></div>
+      <span class="val">+5.47%</span></div>
     <div class="bar-row"><span class="label">M03</span>
       <div class="bar"><span style="width:3.31%"></span></div>
       <span class="val">+3.31%</span></div>
@@ -236,8 +241,8 @@
       <div class="bar"><span style="width:0%"></span></div>
       <span class="val zero" style="color:var(--dim)">0.00%</span></div>
     <div class="bar-row"><span class="label">inject + all</span>
-      <div class="bar bad"><span style="width:63.26%"></span></div>
-      <span class="val neg" style="color:var(--bad)">−63.26%</span></div>
+      <div class="bar bad"><span style="width:63.34%"></span></div>
+      <span class="val neg" style="color:var(--bad)">−63.34%</span></div>
   </div>
 
   <table>
@@ -247,16 +252,16 @@
       <th class="num">non-idem</th><th class="num">safety</th>
     </tr></thead>
     <tbody>
-      <tr class="hi"><td><b>all_safe</b></td><td class="num pos">+21.36</td><td class="num">+1.40</td><td class="num">0.131</td><td class="num">0</td><td class="num">0</td></tr>
-      <tr><td>M03+M24</td><td class="num pos">+9.30</td><td class="num">+0.77</td><td class="num">0.148</td><td class="num">0</td><td class="num">0</td></tr>
-      <tr><td>M24</td><td class="num pos">+6.07</td><td class="num">+0.37</td><td class="num">0.072</td><td class="num">0</td><td class="num">0</td></tr>
-      <tr><td>M04+M25</td><td class="num pos">+6.04</td><td class="num">+0.63</td><td class="num">0.051</td><td class="num">0</td><td class="num">0</td></tr>
-      <tr><td>M19</td><td class="num pos">+6.01</td><td class="num zero">0.00</td><td class="num">0.012</td><td class="num">0</td><td class="num">0</td></tr>
-      <tr><td>M25</td><td class="num pos">+5.55</td><td class="num">+0.47</td><td class="num">0.038</td><td class="num">0</td><td class="num">0</td></tr>
-      <tr><td>M03</td><td class="num pos">+3.31</td><td class="num">+0.40</td><td class="num">0.099</td><td class="num">0</td><td class="num">0</td></tr>
-      <tr><td>M04</td><td class="num pos">+0.53</td><td class="num">+0.17</td><td class="num">0.027</td><td class="num">0</td><td class="num">0</td></tr>
+      <tr class="hi"><td><b>all_safe</b></td><td class="num pos">+21.28</td><td class="num">+1.40</td><td class="num">0.139</td><td class="num">0</td><td class="num">0</td></tr>
+      <tr><td>M03+M24</td><td class="num pos">+9.30</td><td class="num">+0.77</td><td class="num">0.162</td><td class="num">0</td><td class="num">0</td></tr>
+      <tr><td>M24</td><td class="num pos">+6.07</td><td class="num">+0.37</td><td class="num">0.086</td><td class="num">0</td><td class="num">0</td></tr>
+      <tr><td>M19</td><td class="num pos">+6.01</td><td class="num zero">0.00</td><td class="num">0.017</td><td class="num">0</td><td class="num">0</td></tr>
+      <tr><td>M04+M25</td><td class="num pos">+5.97</td><td class="num">+0.63</td><td class="num">0.055</td><td class="num">0</td><td class="num">0</td></tr>
+      <tr><td>M25</td><td class="num pos">+5.47</td><td class="num">+0.47</td><td class="num">0.042</td><td class="num">0</td><td class="num">0</td></tr>
+      <tr><td>M03</td><td class="num pos">+3.31</td><td class="num">+0.40</td><td class="num">0.113</td><td class="num">0</td><td class="num">0</td></tr>
+      <tr><td>M04</td><td class="num pos">+0.53</td><td class="num">+0.17</td><td class="num">0.030</td><td class="num">0</td><td class="num">0</td></tr>
       <tr><td>none</td><td class="num zero">0.00</td><td class="num zero">0.00</td><td class="num">0.000</td><td class="num">0</td><td class="num">0</td></tr>
-      <tr class="bad"><td><b>inject+all</b></td><td class="num neg">−63.26</td><td class="num">+1.73</td><td class="num">0.149</td><td class="num">2</td><td class="num">0</td></tr>
+      <tr class="bad"><td><b>inject+all</b></td><td class="num neg">−63.34</td><td class="num">+1.73</td><td class="num">0.160</td><td class="num">2</td><td class="num">0</td></tr>
     </tbody>
   </table>
   <div class="legend">
@@ -264,7 +269,7 @@
   </div>
 
   <div class="callout">
-    핵심 결정 — <b>기본 체인은 <code>all_safe</code></b>(M03+M04+M19+M24+M25). 토큰 21.36% ↓,
+    핵심 결정 — <b>기본 체인은 <code>all_safe</code></b>(M03+M04+M19+M24+M25). 토큰 21.28% ↓,
     audit +1.4점, error/safety 0. <code>inject+all</code>은 시스템 프롬프트가 짧을 때
     no-filler 한 줄을 추가하면서 비율 −63%로 늘어나므로 <b>긴 프롬프트 전용 옵션</b>으로 분리.
   </div>
@@ -669,7 +674,7 @@
       <h4 style="margin-top:0">1. 실제 코딩 프롬프트에서 의미 있는 절감</h4>
       <p>단순 장난감 코퍼스가 아닌 <b>Copilot/Cursor/Aider 패턴</b>을
         모방한 프롬프트에서 V4가 EN 평균 <b>+20.95%</b>, 최대 <b>+48%</b>의
-        토큰 절감을 달성. <code>bench_real/legacy</code>의 21.36%와
+        토큰 절감을 달성. <code>bench_real/legacy</code>의 21.28%와
         독립적으로 재현됨.</p>
     </div>
     <div class="panel">
@@ -711,7 +716,7 @@
     <div class="panel">
       <h3 style="margin-top:0">트랙 A 결론</h3>
       <ul class="tight">
-        <li><b>기본 체인 = all_safe</b>: 21.36% 절감, audit +1.4, 0 안전 위반</li>
+        <li><b>기본 체인 = all_safe</b>: 21.28% 절감, audit +1.4, 0 안전 위반</li>
         <li><b>최저비용 옵션 = M03+M24</b>: 9.30% 절감, runtime 0.15ms</li>
         <li><b>위험 옵션 = inject+all</b>: 짧은 프롬프트에서 비율 폭증, 멱등성 깨짐</li>
         <li>v0.2.0이 “production-ready” 라벨을 받은 직접 근거</li>
