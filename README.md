@@ -1,7 +1,7 @@
 # kpx — Karpathy-Optimization
 
 > **Prompt-side** LLM token optimization toolkit, designed as a complement to [`rtk`](https://github.com/rtk-ai/rtk) (which handles shell-output side).
-> Implements **30 token-saving methods** ([docs/METHODS.md](docs/METHODS.md) · [methods.html](docs/methods.html)), all tagged with one of Andrej Karpathy's 8 mental-model framings.
+> Implements **30 token-saving methods** ([docs/METHODS.md](docs/METHODS.md) · [methods.html ▶ view][doc-methods]), all tagged with one of Andrej Karpathy's 8 mental-model framings.
 
 ---
 
@@ -16,7 +16,9 @@
 | **C — Deep code** | 90-cell static invariant analysis | 90 | found **B13** (M25 fenced-code indent) → fixed |
 | **D — Model compare** | 10 models × 15 prompts × 3 runs | 450 | **+17.45 %** corpus-weighted, Anthropic 1.32× tokens vs OpenAI |
 
-**Full results & charts:** [`docs/benchmark-results.html`](docs/benchmark-results.html) · **methodology:** [`docs/benchmark-plan.html`](docs/benchmark-plan.html) · **method catalog:** [`docs/methods.html`](docs/methods.html) · **project overview:** [`docs/project-overview.html`](docs/project-overview.html)
+**Full results & charts:** [benchmark-results.html ▶ view][doc-results] · **methodology:** [benchmark-plan.html ▶ view][doc-plan] · **method catalog:** [methods.html ▶ view][doc-methods] · **project overview:** [project-overview.html ▶ view][doc-overview]
+
+<sub>HTML 페이지는 raw.githack.com 으로 즉시 렌더링됩니다. 저장소에서 보려면 [docs/](docs/) 폴더를 직접 참조하세요.</sub>
 
 Top-line takeaway from Track D (model_compare, 450 cells, monthly cost @ 1 M req):
 
@@ -49,7 +51,7 @@ Built directly on Karpathy's 8 mental models:
 - **F5 Verifiability** — structured output
 - **F8 Pretraining = lossy compression** — strip known facts
 
-Full taxonomy in [docs/methods.html](docs/methods.html).
+Full taxonomy in [docs/methods.html ▶ view][doc-methods].
 
 ## Install
 
@@ -107,7 +109,7 @@ All safe transforms preserve fenced/inline code blocks via `_apply_outside_code`
 | M25 | 중복 role 태그 제거 | ✅ `strip_role_tags` (B13 코드 보존 fix) |
 | (audit / external) | M02·M05·M06·M07·M08·M10·M11·M16·M17·M18·M20·M21·M22·M23·M26·M27·M28·M29·M30 | ⚠️ 권고만 (외부 의존 / 프로세스) |
 
-전체 30 방법 카탈로그 → [docs/methods.html](docs/methods.html).
+전체 30 방법 카탈로그 → [docs/methods.html ▶ view][doc-methods].
 
 ## Tests
 
@@ -124,4 +126,9 @@ PYTHONPATH=. pytest tests/ -q   # 43/43 PASS (14 core + 29 regression)
 
 ## License
 
-MIT — see [LICENSE](LICENSE). Built on top of public Andrej Karpathy talks / blog posts cited in [docs/methods.html](docs/methods.html).
+MIT — see [LICENSE](LICENSE). Built on top of public Andrej Karpathy talks / blog posts cited in [docs/methods.html ▶ view][doc-methods].
+
+[doc-results]: https://raw.githack.com/MSFT-AI-BUILD-INTERNAL/aibuild-kpx/main/docs/benchmark-results.html
+[doc-plan]: https://raw.githack.com/MSFT-AI-BUILD-INTERNAL/aibuild-kpx/main/docs/benchmark-plan.html
+[doc-methods]: https://raw.githack.com/MSFT-AI-BUILD-INTERNAL/aibuild-kpx/main/docs/methods.html
+[doc-overview]: https://raw.githack.com/MSFT-AI-BUILD-INTERNAL/aibuild-kpx/main/docs/project-overview.html
