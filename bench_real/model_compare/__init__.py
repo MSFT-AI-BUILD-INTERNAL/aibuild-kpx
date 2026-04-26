@@ -81,6 +81,7 @@ MODELS: list[ModelSpec] = [
     ModelSpec("openai", "gpt-4o-mini", count_openai, "exact", 0.15),
     ModelSpec("openai", "gpt-4o",      count_openai, "exact", 2.50),
     ModelSpec("openai", "gpt-5-mini",  count_openai, "exact", 0.25),
+    ModelSpec("openai", "gpt-5.4",     count_openai, "exact", 5.00),
     # Anthropic
     ModelSpec("anthropic", "claude-haiku-4.5",  count_anthropic, "heuristic", 1.00),
     ModelSpec("anthropic", "claude-sonnet-4.7", count_anthropic, "heuristic", 3.00),
