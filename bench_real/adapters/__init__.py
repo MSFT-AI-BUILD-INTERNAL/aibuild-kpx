@@ -40,4 +40,7 @@ def get_adapter(name: str, model: str | None = None) -> Adapter:
     if name == "anthropic":
         from .anthropic import AnthropicAdapter
         return AnthropicAdapter(model=model or "claude-sonnet-4.7")
+    if name in ("google", "gemini"):
+        from .google import GoogleAdapter
+        return GoogleAdapter(model=model or "gemini-1.5-flash")
     raise ValueError(f"unknown adapter: {name}")

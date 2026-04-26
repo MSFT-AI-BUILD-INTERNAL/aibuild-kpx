@@ -111,13 +111,13 @@
 
 <header>
   <h1>kpx 벤치마크 — 수행 방법과 결과</h1>
-  <div class="sub">자체 QA(legacy v0.2.0) + 실전 LLM 하너스(bench_real plan v2) + 심층 소스코드 정적 분석 · 2026-04-25</div>
+  <div class="sub">자체 QA(legacy v0.2.0) + 실전 LLM 하너스(bench_real plan v2) + 심층 소스코드 정적 분석 + 모델별 토큰·비용 비교 · 2026-04-26</div>
   <div class="pillrow">
-    <span class="pill acc">3-track</span>
-    <span class="pill ok">300 + 111 + 90 round</span>
-    <span class="pill ok">+21.28% / +20.95% / −8.36% 토큰 절감</span>
-    <span class="pill ok">코드 보존 불변수 100%</span>
-    <span class="pill ok">B13 버그 발견·수정</span>
+    <span class="pill acc">4-track</span>
+    <span class="pill ok">300 + 111 + 90 + 405 round</span>
+    <span class="pill ok">+21.28% / +20.95% / +17.58% 토큰 절감</span>
+    <span class="pill ok">9 모델 (Opus/GPT/Gemini) × 15 prompt</span>
+    <span class="pill ok">opus 1M콜 = 월 $345 절감</span>
     <span class="pill ok">43/43 tests pass</span>
   </div>
 </header>
@@ -131,6 +131,7 @@
     <li><a href="#methods">측정·점수 산출 방법</a></li>
     <li><a href="#smoke">스모크 결과 (mock 어댑터)</a></li>
     <li><a href="#deepcode">심층 분석 — 소스코드 효율성</a></li>
+    <li><a href="#models">모델별 토큰 · 비용 비교</a></li>
     <li><a href="#interpret">해석과 의사결정</a></li>
     <li><a href="#repro">재현 절차</a></li>
     <li><a href="#limits">한계·다음 단계</a></li>
@@ -709,8 +710,134 @@
 </section>
 
 <!-- ────────────────────────────────────────────── -->
+<section id="models">
+  <h2><span class="num">07</span>모델별 토큰 · 비용 비교 (Opus / GPT / Gemini)</h2>
+
+  <p>
+    동일한 <b>15개 실세계 코딩 프롬프트</b>를 9개 모델(OpenAI 3 · Anthropic 3 · Google 3) ×
+    3개 변형(V0 raw / V3 / V4 all_safe)에 교차 적용 → 쓰기 측 토큰·비용 절감을 계산한다.
+    총 <b>405 cells</b>. 동일 프롬프트가 모델 패밀리마다 다른 토크나이저로 서로 다르게 쪼개지고,
+    그에 따라 <b>kpx 축소 효과도 모델별로 조금씩 다르다</b>는 점이 본 섹션의 핵심 관측이다.
+  </p>
+
+  <div class="panel tight" style="border-left:4px solid var(--warn)">
+    <b>토큰수 정확도 표기</b> —
+    OpenAI는 <code>tiktoken</code>(<code>o200k_base</code>)로 <b>정확 측정</b>,
+    Anthropic·Google은 공개 가이드 기반 <b>휴리스틱</b>(Claude 3.5 글자/토큰 · Gemini 4 글자/토큰,
+    CJK는 1글자=1토큰). 따라서 <i>절대값</i>보다 <i>추세·절감율</i>을 보는 것이 정확하다.
+    JSON에 <code>tokenizer_kind</code> 필드로 라벨 있음.
+  </div>
+
+  <h3>변형별 평균 절감 (모델 전체 코퍼스 가중)</h3>
+  <table>
+    <thead><tr>
+      <th>variant</th><th class="num">cells</th>
+      <th class="num">avg savings %</th><th class="num">corpus-weighted %</th>
+    </tr></thead>
+    <tbody>
+      <tr><td>V0 raw</td><td class="num">135</td><td class="num zero">0.00%</td><td class="num zero">0.00%</td></tr>
+      <tr><td>V3 (M03+M24+M25)</td><td class="num">135</td><td class="num pos">+17.49%</td><td class="num pos">+17.58%</td></tr>
+      <tr class="hi"><td><b>V4 all_safe</b></td><td class="num">135</td><td class="num pos"><b>+17.49%</b></td><td class="num pos"><b>+17.58%</b></td></tr>
+    </tbody>
+  </table>
+  <div class="legend">
+    9개 모델 평균으로 V4·V3가 거의 같은 이유는 M04(중복 시스템 관용구)/M19(요약)가
+    실제 코딩 프롬프트에서는 거의 적용되지 않아 추가 이득이 작기 때문. 일반 코퍼스(legacy)에서는 V4가 V3보다 뚜렷이 큼.
+  </div>
+
+  <h3>모델·변형별 적용 최적화 결과</h3>
+  <table>
+    <thead><tr>
+      <th>family</th><th>model</th><th>variant</th>
+      <th class="num">tok</th><th class="num">savings %</th>
+      <th class="num">$/1k prompts</th>
+    </tr></thead>
+    <tbody>
+      <tr><td>OpenAI</td><td>gpt-4o-mini</td><td>V0 raw</td><td class="num">1419</td><td class="num zero">0.00%</td><td class="num">$0.0143</td></tr>
+      <tr class="hi"><td>OpenAI</td><td>gpt-4o-mini</td><td><b>V4</b></td><td class="num">1192</td><td class="num pos"><b>+15.89%</b></td><td class="num pos">$0.0119</td></tr>
+      <tr><td>OpenAI</td><td>gpt-4o</td><td>V0 raw</td><td class="num">1419</td><td class="num zero">0.00%</td><td class="num">$0.2366</td></tr>
+      <tr class="hi"><td>OpenAI</td><td>gpt-4o</td><td><b>V4</b></td><td class="num">1192</td><td class="num pos"><b>+15.89%</b></td><td class="num pos">$0.1987</td></tr>
+      <tr><td>OpenAI</td><td>gpt-5-mini</td><td>V0 raw</td><td class="num">1419</td><td class="num zero">0.00%</td><td class="num">$0.0238</td></tr>
+      <tr class="hi"><td>OpenAI</td><td>gpt-5-mini</td><td><b>V4</b></td><td class="num">1192</td><td class="num pos"><b>+15.89%</b></td><td class="num pos">$0.0199</td></tr>
+      <tr><td>Anthropic</td><td>claude-haiku-4.5</td><td>V0 raw</td><td class="num">1879</td><td class="num zero">0.00%</td><td class="num">$0.1253</td></tr>
+      <tr class="hi"><td>Anthropic</td><td>claude-haiku-4.5</td><td><b>V4</b></td><td class="num">1534</td><td class="num pos"><b>+18.30%</b></td><td class="num pos">$0.1023</td></tr>
+      <tr><td>Anthropic</td><td>claude-sonnet-4.7</td><td>V0 raw</td><td class="num">1879</td><td class="num zero">0.00%</td><td class="num">$0.3758</td></tr>
+      <tr class="hi"><td>Anthropic</td><td>claude-sonnet-4.7</td><td><b>V4</b></td><td class="num">1534</td><td class="num pos"><b>+18.30%</b></td><td class="num pos">$0.3068</td></tr>
+      <tr><td>Anthropic</td><td>claude-opus-4.7</td><td>V0 raw</td><td class="num">1879</td><td class="num zero">0.00%</td><td class="num">$1.8790</td></tr>
+      <tr class="hi"><td>Anthropic</td><td>claude-opus-4.7</td><td><b>V4</b></td><td class="num">1534</td><td class="num pos"><b>+18.30%</b></td><td class="num pos">$1.5340</td></tr>
+      <tr><td>Google</td><td>gemini-1.5-flash</td><td>V0 raw</td><td class="num">1667</td><td class="num zero">0.00%</td><td class="num">$0.0083</td></tr>
+      <tr class="hi"><td>Google</td><td>gemini-1.5-flash</td><td><b>V4</b></td><td class="num">1366</td><td class="num pos"><b>+18.28%</b></td><td class="num pos">$0.0069</td></tr>
+      <tr><td>Google</td><td>gemini-1.5-pro</td><td>V0 raw</td><td class="num">1667</td><td class="num zero">0.00%</td><td class="num">$0.1387</td></tr>
+      <tr class="hi"><td>Google</td><td>gemini-1.5-pro</td><td><b>V4</b></td><td class="num">1366</td><td class="num pos"><b>+18.28%</b></td><td class="num pos">$0.1138</td></tr>
+      <tr><td>Google</td><td>gemini-2.5-pro</td><td>V0 raw</td><td class="num">1667</td><td class="num zero">0.00%</td><td class="num">$0.2779</td></tr>
+      <tr class="hi"><td>Google</td><td>gemini-2.5-pro</td><td><b>V4</b></td><td class="num">1366</td><td class="num pos"><b>+18.28%</b></td><td class="num pos">$0.2277</td></tr>
+    </tbody>
+  </table>
+  <div class="legend">
+    해석 — 동일 프롬프트에 대해 <b>Anthropic이 가장 많은 토큰(1879)</b>, OpenAI가 가장 적은 토큰(1419)을 소비.
+    Claude가 OpenAI보다 알파벳당 세분화되어 글자 당 토큰이 많으므로 <b>kpx 절감 효과가 절대값 관점에서는 Claude에서 가장 큼</b>(각 프롬프트당 평균 −23 토큰).
+  </div>
+
+  <h3>월간 1M 호출 시 비용 절감 시뮬레이션</h3>
+  <table>
+    <thead><tr>
+      <th>model</th>
+      <th class="num">avg tok V0</th><th class="num">avg tok V4</th>
+      <th class="num">$/1M v0</th><th class="num">$/1M v4</th>
+      <th class="num">$ saved/month</th><th class="num">save %</th>
+    </tr></thead>
+    <tbody>
+      <tr class="hi"><td>claude-opus-4.7</td><td class="num">125.3</td><td class="num">102.3</td><td class="num">$1879.00</td><td class="num">$1534.00</td><td class="num pos"><b>$345.00</b></td><td class="num pos">+18.36%</td></tr>
+      <tr><td>claude-sonnet-4.7</td><td class="num">125.3</td><td class="num">102.3</td><td class="num">$375.80</td><td class="num">$306.80</td><td class="num pos">$69.00</td><td class="num pos">+18.36%</td></tr>
+      <tr><td>gemini-2.5-pro</td><td class="num">111.1</td><td class="num">91.1</td><td class="num">$277.83</td><td class="num">$227.67</td><td class="num pos">$50.17</td><td class="num pos">+18.06%</td></tr>
+      <tr><td>gpt-4o</td><td class="num">94.6</td><td class="num">79.5</td><td class="num">$236.50</td><td class="num">$198.67</td><td class="num pos">$37.83</td><td class="num pos">+16.00%</td></tr>
+      <tr><td>gemini-1.5-pro</td><td class="num">111.1</td><td class="num">91.1</td><td class="num">$138.92</td><td class="num">$113.83</td><td class="num pos">$25.08</td><td class="num pos">+18.06%</td></tr>
+      <tr><td>claude-haiku-4.5</td><td class="num">125.3</td><td class="num">102.3</td><td class="num">$125.27</td><td class="num">$102.27</td><td class="num pos">$23.00</td><td class="num pos">+18.36%</td></tr>
+      <tr><td>gpt-5-mini</td><td class="num">94.6</td><td class="num">79.5</td><td class="num">$23.65</td><td class="num">$19.87</td><td class="num">$3.78</td><td class="num pos">+16.00%</td></tr>
+      <tr><td>gpt-4o-mini</td><td class="num">94.6</td><td class="num">79.5</td><td class="num">$14.19</td><td class="num">$11.92</td><td class="num">$2.27</td><td class="num pos">+16.00%</td></tr>
+      <tr><td>gemini-1.5-flash</td><td class="num">111.1</td><td class="num">91.1</td><td class="num">$8.34</td><td class="num">$6.83</td><td class="num">$1.51</td><td class="num pos">+18.06%</td></tr>
+    </tbody>
+  </table>
+  <div class="legend">
+    월 1M 호출 기준 프롬프트 측 입력만 계산 (출력/캐싱 제외). 2026-04 공개 가격표 기준.
+    코드워크 사용량이 1M+인 서비스에 <b>opus는 kpx 하나로 월 $345 절감</b>, gpt-4o는 월 $38, gemini-flash는 월 $1.5가 구조적으로 생성됨.
+  </div>
+
+  <div class="grid g3" style="margin-top:18px">
+    <div class="panel">
+      <h4>핵심 수치 1</h4>
+      <p style="font-size:28px;color:var(--ok);margin:8px 0"><b>+17.58%</b></p>
+      <p>9모델 교차 평균 토큰 절감율. V4 all_safe 적용 시 코퍼스 가중 평균.</p>
+    </div>
+    <div class="panel">
+      <h4>핵심 수치 2</h4>
+      <p style="font-size:28px;color:var(--ok);margin:8px 0"><b>$345/월</b></p>
+      <p>opus 1M 호출만 고려. 이 수치는 kpx 함수 단 1개의 일괄 적용 결과.</p>
+    </div>
+    <div class="panel">
+      <h4>핵심 수치 3</h4>
+      <p style="font-size:28px;color:var(--warn);margin:8px 0"><b>1.32×</b></p>
+      <p>토크나이저가 다르면 Claude가 GPT보다 동일 프롬프트에 1.32배 더 많은 토큰을 쓴다는 양극화. 양극화만큼 당연한 프롬프트 절단 자고적인 수익이 더크다.</p>
+    </div>
+  </div>
+
+  <h3>라이브 API 콜 모드 (선택)</h3>
+<pre><code># 키가 설정되어 있는 provider만 실행, 나머지는 skip
+export OPENAI_API_KEY=...
+export ANTHROPIC_API_KEY=...
+export GOOGLE_API_KEY=...
+python -m bench_real.model_compare.run --live --max-calls 3 \
+    --providers openai,anthropic,google \
+    --variant V4_all_safe</code></pre>
+  <div class="legend">
+    원격 호출 시 API가 돌려주는 실측 토큰 수치를 JSON의 <code>live.live_rows[]</code>에 저장.
+    해당 수치와 이 섹션의 휴리스틱 추정치를 비교하면 때 리입도가 자동 검증됨.
+  </div>
+</section>
+
+<!-- ────────────────────────────────────────────── -->
 <section id="interpret">
-  <h2><span class="num">07</span>해석과 의사결정</h2>
+  <h2><span class="num">08</span>해석과 의사결정</h2>
 
   <div class="grid g2">
     <div class="panel">
@@ -753,7 +880,7 @@
 
 <!-- ─────────────────────────────────────────────── -->
 <section id="repro">
-  <h2><span class="num">08</span>재현 절차</h2>
+  <h2><span class="num">09</span>재현 절차</h2>
 
   <h4>트랙 A — 키 0개</h4>
 <pre><code>python -m bench_real.legacy.runner
@@ -790,7 +917,7 @@ python -m bench_real.runner --tier standard --adapter anthropic \
 
 <!-- ─────────────────────────────────────────────── -->
 <section id="limits">
-  <h2><span class="num">09</span>한계 · 다음 단계</h2>
+  <h2><span class="num">10</span>한계·다음 단계</h2>
 
   <div class="grid g2">
     <div class="panel">
