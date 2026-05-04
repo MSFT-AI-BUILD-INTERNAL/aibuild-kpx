@@ -68,6 +68,10 @@ def main(argv=None) -> int:
     ap.add_argument("--max-cases", type=int, default=None,
                     help="cap on number of cases (debug)")
     ap.add_argument("--no-resume", action="store_true")
+    ap.add_argument("--benchmark-version", default="v1",
+                    help="benchmark dataset/version label for traceability")
+    ap.add_argument("--split", default="public",
+                    help="dataset split label (e.g., public|private-holdout)")
     args = ap.parse_args(argv)
 
     random.seed(args.seed)
@@ -95,6 +99,7 @@ def main(argv=None) -> int:
     print(f"[runner] tier={args.tier} cases={len(cases)} variants={variants} "
           f"repeats={repeats} total_cells={total_cells} adapter={args.adapter} "
           f"model={adapter.model} cap=${args.cap_usd:.2f}")
+        print(f"[runner] benchmark_version={args.benchmark_version} split={args.split}")
     print(f"[runner] writing → {out_path}")
     if seen:
         print(f"[runner] resuming, {len(seen)} cells already in {out_path.name}")
@@ -173,7 +178,10 @@ def main(argv=None) -> int:
                     row = asdict(cell)
                     if axes is not None:
                         row["judge_axes"] = axes
+                    row["benchmark_version"] = args.benchmark_version
+                    row["split"] = args.split
                     row["lang"] = case.lang
+                    row["tags"] = case.tags
                     f.write(json.dumps(row, ensure_ascii=False) + "\n")
                     f.flush()
                     written += 1

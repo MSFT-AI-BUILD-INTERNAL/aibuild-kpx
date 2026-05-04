@@ -20,7 +20,7 @@ tools: ['edit', 'search', 'runCommands', 'runTasks', 'usages', 'problems', 'chan
 | 역할 | 이름 | 모델 | 정의 파일 |
 |---|---|---|---|
 | Planner | **Cassia** (C-Checker) | Claude Opus 4.7 | [.github/agents/c-checker.agent.md](c-checker.agent.md) |
-| Planner | **Orion** (O-Checker) | GPT 5.4 | [.github/agents/o-checker.agent.md](o-checker.agent.md) |
+| Planner | **Orion** (O-Checker) | GPT 5.5 | [.github/agents/o-checker.agent.md](o-checker.agent.md) |
 | Planner | **Gaia** (G-Checker) | Gemini 3.1 Pro | [.github/agents/g-checker.agent.md](g-checker.agent.md) |
 | Generator | **Gwen** (G-Writer) | — | [.github/agents/g-writer.agent.md](g-writer.agent.md) |
 | Evaluator | **Evan** (E-Judge) | — | [.github/agents/e-judge.agent.md](e-judge.agent.md) |

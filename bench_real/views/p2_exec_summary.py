@@ -27,8 +27,8 @@ def render(results_path: Path, out_dir: Path) -> Path:
         "",
         "## Token reduction × Quality (vs V0)",
         "",
-        "| Variant | n | tokens_in (mean) | Δtoken | quality_mean | Δquality |",
-        "|---|---:|---:|---:|---:|---:|",
+        "| Variant | n | tokens_in (mean) | Δtoken | quality_mean ±95%CI | Δquality | cost/quality point |",
+        "|---|---:|---:|---:|---:|---:|---:|",
     ]
     rec = None
     for v in variants:
@@ -36,8 +36,12 @@ def render(results_path: Path, out_dir: Path) -> Path:
         q = agg_quality(rs); tk = agg_tokens(rs)
         dt = reduction_pct(base_t, tk['mean'])
         dq = (q['mean'] or 0) - base_q
+        total_cost = sum(float(r.get("cost_usd", 0.0) or 0.0) for r in rs)
+        qsum = sum(float(r.get("quality_score", 0.0) or 0.0) for r in rs)
+        cost_per_q = (total_cost / qsum) if qsum > 0 else 0.0
+        ci = q.get("ci95") or 0.0
         lines.append(f"| {v} | {len(rs)} | {tk['mean']:.1f} | {-dt:+.2f}% | "
-                     f"{q['mean']:.1f} | {dq:+.1f} |")
+                     f"{q['mean']:.1f} ± {ci:.2f} | {dq:+.1f} | ${cost_per_q:.6f} |")
         # recommend the highest-saving variant with Δq >= -2
         if v != "V0" and dq >= -2.0:
             if rec is None or dt > rec[1]:
@@ -48,6 +52,33 @@ def render(results_path: Path, out_dir: Path) -> Path:
         lines.append(f"**{rec[0]}** — {rec[1]:.2f}% token saving, Δquality {rec[2]:+.1f}")
     else:
         lines.append("No variant met the Δquality ≥ −2 threshold. Stay on V0.")
+
+    lines += ["", "## Task-level risk view", "",
+              "| Variant | Worst task | Mean quality | vs task V0 |",
+              "|---|---|---:|---:|"]
+    base_task_means = {}
+    for task, rs in group_by(by_v.get("V0", []), "task").items():
+        q = agg_quality(rs)
+        base_task_means[task] = q.get("mean") or 0.0
+    for v in variants:
+        tmap = group_by(by_v[v], "task")
+        worst_task = "-"
+        worst_mean = None
+        worst_delta = 0.0
+        for task, rs in tmap.items():
+            qmean = agg_quality(rs).get("mean")
+            if qmean is None:
+                continue
+            base_task = base_task_means.get(task, 0.0)
+            delta = qmean - base_task
+            if worst_mean is None or qmean < worst_mean:
+                worst_task = task
+                worst_mean = qmean
+                worst_delta = delta
+        if worst_mean is None:
+            lines.append(f"| {v} | - | - | - |")
+        else:
+            lines.append(f"| {v} | {worst_task} | {worst_mean:.1f} | {worst_delta:+.1f} |")
 
     # Monthly $ scenarios (input-only, since kpx affects input only)
     pin, _pout = PRICES.get(model, (1.0, 3.0))

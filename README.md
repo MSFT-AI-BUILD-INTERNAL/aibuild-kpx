@@ -16,6 +16,10 @@
 | **C — Deep code** | 90-cell static invariant analysis | 90 | found **B13** (M25 fenced-code indent) → fixed |
 | **D — Model compare** | 10 models × 15 prompts × 3 runs | 450 | **+17.45 %** corpus-weighted, Anthropic 1.32× tokens vs OpenAI |
 
+Benchmark reporting now records split/version metadata and highlights uncertainty
+and task-level risk in the executive summary, so benchmark wins are easier to
+trust in real deployment decisions.
+
 **Full results & charts:** [benchmark-results.html ▶ view][doc-results] · **methodology:** [benchmark-plan.html ▶ view][doc-plan] · **method catalog:** [methods.html ▶ view][doc-methods] · **project overview:** [project-overview.html ▶ view][doc-overview]
 
 <sub>HTML 페이지는 raw.githack.com 으로 즉시 렌더링됩니다. 저장소에서 보려면 [docs/](docs/) 폴더를 직접 참조하세요.</sub>

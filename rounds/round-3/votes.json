@@ -1,0 +1,40 @@
+{
+  "round": 3,
+  "target": "Coverage Expansion (Languages / Tool Use / Task Realism)",
+  "verdict": "APPROVE",
+  "votes": [
+    {
+      "agent": "C-Checker",
+      "verdict": "APPROVE",
+      "reasons": [
+        "현재 headline은 강하지만 사용자 입장에서는 실제 워크플로 적합성이 더 중요하다.",
+        "tool-use와 patch realism을 넣어야 kpx의 실제 가치가 더 설득력 있게 보인다."
+      ],
+      "suggestions": [
+        "트랙 간 headline을 분리해 한 트랙의 강점이 전체를 과장하지 않게 한다."
+      ]
+    },
+    {
+      "agent": "O-Checker",
+      "verdict": "APPROVE",
+      "reasons": [
+        "현재 task taxonomy에 tool-use, long-context, patch realism 축이 없다.",
+        "family coverage 표는 README와 HTML 뷰에 쉽게 반영 가능하다."
+      ],
+      "suggestions": [
+        "`task_family` 필드를 schema와 views 공통 기준으로 추가한다."
+      ]
+    },
+    {
+      "agent": "G-Checker",
+      "verdict": "APPROVE",
+      "reasons": [
+        "SWE-bench Verified와 Multilingual은 현실성·언어 다양성이 separate leaderboard를 만들 정도로 중요하다는 증거다.",
+        "Anthropic의 routing/orchestrator 관점은 task class 분리가 성능 해석에 중요함을 뒷받침한다."
+      ],
+      "suggestions": [
+        "새 트랙은 처음부터 public/private split과 함께 설계한다."
+      ]
+    }
+  ]
+}

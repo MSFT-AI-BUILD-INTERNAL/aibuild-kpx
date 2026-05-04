@@ -21,20 +21,27 @@ end-to-end so you can validate plumbing before paying for tokens.
 ```bash
 export OPENAI_API_KEY=sk-...
 python -m bench_real.runner --tier lite --adapter openai \
-    --model gpt-4o-mini --cap-usd 3.00
+  --model gpt-4o-mini --cap-usd 3.00 \
+  --benchmark-version 2026-05 --split public
 
 # Standard tier (M-A + M-B, n=3, ~$15 budget)
 export ANTHROPIC_API_KEY=sk-ant-...
 python -m bench_real.runner --tier standard --adapter openai \
     --model gpt-4o-mini --cap-usd 7.00 --judge-adapter anthropic \
-    --judge-model claude-sonnet-4.7
+  --judge-model claude-sonnet-4.7 --benchmark-version 2026-05 --split public
 python -m bench_real.runner --tier standard --adapter anthropic \
     --model claude-sonnet-4.7 --cap-usd 8.00 --judge-adapter openai \
-    --judge-model gpt-4o-mini
+  --judge-model gpt-4o-mini --benchmark-version 2026-05 --split private-holdout
 ```
 
 Re-running with the same `--run-id` resumes by skipping rows already in the
 results file.
+
+For traceability and real-world validation, each result row can now include:
+
+- `benchmark_version` (e.g., `2026-05`)
+- `split` (e.g., `public`, `private-holdout`)
+- case `tags` for slice analysis
 
 ## Tiers
 
@@ -107,6 +114,17 @@ always passed through unchanged — this is kpx's actual scope.
 | P6 i18n | per-language Δquality                | Δ ≥ −2 pt for any lang |
 
 If P3 fails, no release. Other personas: investigate before shipping.
+
+## Practical reporting updates
+
+`p2_exec_summary.md` now includes:
+
+- quality mean with 95% confidence interval per variant
+- cost per quality point (efficiency signal)
+- task-level risk view (worst task delta vs V0)
+
+This helps detect variants that look good on aggregate but regress on specific
+task families.
 
 ## Cost cap
 

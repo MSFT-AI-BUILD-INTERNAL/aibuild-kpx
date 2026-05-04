@@ -2,6 +2,24 @@
 
 All notable changes to kpx are documented here. Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Added
+- **Benchmark traceability metadata** — `bench_real.runner` now accepts
+  `--benchmark-version` and `--split`, and writes both fields into each result
+  row alongside case `tags` for slice analysis.
+- **Executive summary risk reporting** — `bench_real/views/p2_exec_summary.py`
+  now reports quality mean with 95% confidence interval, cost per quality point,
+  and the worst-performing task per variant relative to `V0`.
+- **Benchmark improvement rounds** — added persisted multi-round benchmark
+  review artifacts under `rounds/round-1` through `rounds/round-4` covering
+  freshness, judge reliability, coverage expansion, and statistical reporting.
+
+### Changed
+- **Benchmark docs** — updated `bench_real/README.md` and the top-level README
+  to describe split/version-aware benchmark runs and more decision-useful
+  reporting outputs.
+
 ## [0.2.0] - 2026-04-25
 
 ### Fixed

@@ -43,12 +43,15 @@ def group_by(rows: list[dict], *keys: str) -> dict:
 def agg_quality(rows: list[dict]) -> dict:
     q = [r["quality_score"] for r in rows if r.get("quality_score") is not None]
     if not q:
-        return {"n": 0, "mean": None, "median": None, "std": None}
+        return {"n": 0, "mean": None, "median": None, "std": None, "ci95": None}
+    sd = pstdev(q) if len(q) > 1 else 0.0
+    ci95 = 1.96 * sd / math.sqrt(len(q)) if len(q) > 1 else 0.0
     return {
         "n": len(q),
         "mean": mean(q),
         "median": median(q),
-        "std": pstdev(q) if len(q) > 1 else 0.0,
+        "std": sd,
+        "ci95": ci95,
     }
 
 

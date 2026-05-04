@@ -1,0 +1,40 @@
+{
+  "round": 1,
+  "target": "Freshness / Contamination Control",
+  "verdict": "APPROVE",
+  "votes": [
+    {
+      "agent": "C-Checker",
+      "verdict": "APPROVE",
+      "reasons": [
+        "현재 벤치마크가 정적 파일 중심이라 미래 성능 주장에 시간이 갈수록 약해질 수 있다.",
+        "버전별 점수 분리는 README의 headline 해석을 더 정직하게 만든다."
+      ],
+      "suggestions": [
+        "public/private split 정의를 README와 계획서 모두에 명시한다."
+      ]
+    },
+    {
+      "agent": "O-Checker",
+      "verdict": "APPROVE",
+      "reasons": [
+        "LiveBench식 rolling refresh와 split 명시는 구조적으로 명확하다.",
+        "검증 포인트가 benchmark version, split name으로 바로 측정 가능하다."
+      ],
+      "suggestions": [
+        "run schema에 `benchmark_version`, `split`, `prompt_source` 필드를 추가한다."
+      ]
+    },
+    {
+      "agent": "G-Checker",
+      "verdict": "APPROVE",
+      "reasons": [
+        "LiveBench는 정기 갱신과 비공개 최신 문제 유지로 contamination 위험을 낮춘다.",
+        "SWE-bench Verified는 human-filtered subset이 raw set보다 신뢰도 높은 리더보드를 만든다는 근거다."
+      ],
+      "suggestions": [
+        "private holdout은 최근 생성 시점과 공개 시점을 별도 기록한다."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "round": 4,
+  "target": "Reproducibility / Cost / Statistical Reporting",
+  "verdict": "APPROVE",
+  "votes": [
+    {
+      "agent": "C-Checker",
+      "verdict": "APPROVE",
+      "reasons": [
+        "평균값만 보여주면 작은 개선과 노이즈를 구분하기 어렵다.",
+        "manifest와 CI 추가는 문서 설득력을 크게 높인다."
+      ],
+      "suggestions": [
+        "headline claim에는 반드시 uncertainty를 병기한다."
+      ]
+    },
+    {
+      "agent": "O-Checker",
+      "verdict": "APPROVE",
+      "reasons": [
+        "현재 runner 기능과 자연스럽게 이어지는 최소 확장이다.",
+        "cost-normalized gain은 benchmark를 운영 의사결정과 직접 연결한다."
+      ],
+      "suggestions": [
+        "run metadata schema를 먼저 고정한 뒤 views를 확장한다."
+      ]
+    },
+    {
+      "agent": "G-Checker",
+      "verdict": "APPROVE",
+      "reasons": [
+        "OpenAI와 lm-eval 모두 per-run detail preservation과 logging을 중시한다.",
+        "복잡도 증가는 통계적 신뢰도 향상에 직접 연결될 때만 정당화된다."
+      ],
+      "suggestions": [
+        "judge cost와 target model cost를 분리 집계한다."
+      ]
+    }
+  ]
+}

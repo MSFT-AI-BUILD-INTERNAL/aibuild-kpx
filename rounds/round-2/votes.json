@@ -1,0 +1,40 @@
+{
+  "round": 2,
+  "target": "Graders / Rubrics / Judge Reliability",
+  "verdict": "APPROVE",
+  "votes": [
+    {
+      "agent": "C-Checker",
+      "verdict": "APPROVE",
+      "reasons": [
+        "지금 구조는 점수는 남지만 왜 점수가 나왔는지의 설명력이 약하다.",
+        "criterion-level reason 저장은 회귀 분석과 문서 신뢰도를 같이 높인다."
+      ],
+      "suggestions": [
+        "평가 실패 예시를 persona별 대표 케이스로 노출한다."
+      ]
+    },
+    {
+      "agent": "O-Checker",
+      "verdict": "APPROVE",
+      "reasons": [
+        "OpenAI식 schema + testing criteria 분리는 현재 JSONL 구조와 잘 맞는다.",
+        "adaptive rubric은 정적 규칙으로 잡기 어려운 문서/요약 과제에 특히 유리하다."
+      ],
+      "suggestions": [
+        "`judge_axes` 외에 `judge_reasons`, `judge_rubric_id`를 스키마에 추가한다."
+      ]
+    },
+    {
+      "agent": "G-Checker",
+      "verdict": "APPROVE",
+      "reasons": [
+        "Vertex AI 문서는 adaptive rubric을 대부분의 평가 시작점으로 권장한다.",
+        "단일 judge 의존보다 disagreement 측정이 평가 신뢰도에 더 직접적이다."
+      ],
+      "suggestions": [
+        "judge disagreement가 일정 이상이면 human review 버킷으로 보낸다."
+      ]
+    }
+  ]
+}
