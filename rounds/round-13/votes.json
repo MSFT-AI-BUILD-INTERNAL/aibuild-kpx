@@ -1,0 +1,29 @@
+{
+  "round": 13,
+  "topic": "dry-run + panel discovery (F13 + F14)",
+  "scope": {
+    "code_changes": [
+      "bench_real/render_results_panel.py: _patch_doc dry_run unified diff path",
+      "bench_real/render_results_panel.py: _list_panels regex discovery + CLI --list-panels",
+      "bench_real/render_results_panel.py: CLI --inputs/--out optional when --list-panels used"
+    ]
+  },
+  "votes": [
+    {
+      "planner": "Cassia",
+      "decision": "APPROVE",
+      "rationale": "F13은 patch가 docs에 미치는 영향을 시각화한 뒤 적용하는 안전한 리뷰 경로. n=2 context로 diff 크기 자체도 작음. F14는 신규 라운드에서 대상 marker가 살아 있는지 확인하는 self-check 도구."
+    },
+    {
+      "planner": "Orion",
+      "decision": "APPROVE",
+      "rationale": "기본 동작(--patch-doc 단독) MD5는 R12와 동일. --inputs/--out 옵션화는 --list-panels 단독 모드와의 직교성을 위해 필요. 잘못된 조합에는 명시적 SystemExit."
+    },
+    {
+      "planner": "Gaia",
+      "decision": "APPROVE",
+      "rationale": "F12를 단독 라운드로 분리한 판단이 정직. 자동 렌더러가 함께 도입되는 라운드까지 마커만 박는 변경은 가치가 낮다. F13의 dry-run 결과를 가설 H3으로 명시 검증."
+    }
+  ],
+  "unanimous": true
+}

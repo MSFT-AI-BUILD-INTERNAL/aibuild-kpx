@@ -1,0 +1,38 @@
+{
+  "round": 8,
+  "topic": "R7 timeout 3 models retry (F1 follow-up)",
+  "judge_model": "openai/gpt-4o-mini",
+  "judge_change_reason": "R7 judge meta/llama-4-scout-17b-16e-instruct is persistently HTTP 429 (verified by direct probe). Switching to a live cross-vendor alternative.",
+  "main_adapter": "github",
+  "scope": {
+    "models": [
+      "mistral-ai/ministral-3b",
+      "meta/llama-3.3-70b-instruct",
+      "deepseek/deepseek-v3-0324"
+    ],
+    "variants": ["V0", "V4"],
+    "max_cases": 5,
+    "repeats": 1,
+    "tier2_rate": 1.0,
+    "per_model_timeout_s": 900
+  },
+  "estimated_cost_usd": 0.0,
+  "votes": [
+    {
+      "planner": "Cassia",
+      "decision": "APPROVE",
+      "rationale": "Judge 교체 사유가 데이터(curl probe HTTP 코드)로 입증되었고, 새 judge는 3개 타깃 어느 벤더와도 다른 cross-vendor 조건을 만족. R7과의 절대 점수 비교는 제한된다는 점이 명시되어 분석 프레임이 정직."
+    },
+    {
+      "planner": "Orion",
+      "decision": "APPROVE",
+      "rationale": "스코프 축소(max_cases 10→5)는 quota 압박을 50% 감소시키고 동일 분석 결론(V0↔V4 within-model delta)을 도출하기에 충분. per-model timeout 900s도 합리적."
+    },
+    {
+      "planner": "Gaia",
+      "decision": "APPROVE",
+      "rationale": "DeepSeek-v3 가용성 위험을 사전 명시하고, 실패 시에도 2/3 모델 결과로 R7 완결도를 보강하는 가치가 있음. 가설 H1·H2는 R7과 동일해 비교 가능."
+    }
+  ],
+  "unanimous": true
+}

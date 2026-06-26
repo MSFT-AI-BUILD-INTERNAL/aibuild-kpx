@@ -1,0 +1,34 @@
+{
+  "round": 6,
+  "topic": "Live API benchmark via GitHub Models (all chat-capable models)",
+  "votes": [
+    {
+      "planner": "Cassia",
+      "initial": "C",
+      "model": "Claude Opus 4.7",
+      "decision": "APPROVE",
+      "rationale": "GitHub Models 사용으로 사용자 API 키 의존 제거. adapter 격리 + per-model timeout 으로 단일 모델 실패가 전체 차단하지 않음. resume 지원으로 중단 안전. lite tier 가 사용자 의도 '전 케이스'(37) 를 정확히 커버."
+    },
+    {
+      "planner": "Orion",
+      "initial": "O",
+      "model": "GPT 5.5",
+      "decision": "APPROVE",
+      "rationale": "외부 USD 비용 $0 (quota 기반). adapter 가 429/5xx exp backoff + Retry-After 준수로 rate-limit 안전. reasoning 모델은 1차에서 제외해 응답 형식 비호환으로 인한 노이즈 차단."
+    },
+    {
+      "planner": "Gaia",
+      "initial": "G",
+      "model": "Gemini 3.1 Pro",
+      "decision": "APPROVE",
+      "rationale": "기존 결과 디렉터리 (lite-final, lite-r5-newmodels 등) 보존. r6-all 신규 디렉터리로 격리. judge=mock 으로 호출량 2배 폭증 방지 — cross-vendor judge 는 follow-up 라운드 권고."
+    }
+  ],
+  "unanimous_approve": true,
+  "preconditions_verified": {
+    "gh_auth": true,
+    "catalog_reachable": true,
+    "inference_ping_ok": true,
+    "user_api_keys_required": false
+  }
+}

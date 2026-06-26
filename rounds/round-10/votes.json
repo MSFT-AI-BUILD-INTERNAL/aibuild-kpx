@@ -1,0 +1,34 @@
+{
+  "round": 10,
+  "topic": "F6 judge fallback + F7 stat panel auto-render (F5 deferred)",
+  "scope": {
+    "code_changes": [
+      "bench_real/runner.py: judge 'error' → rule_based fallback with provenance in judge_axes",
+      "bench_real/render_results_panel.py: new module rendering 07b HTML fragment from aggregates"
+    ],
+    "docs": [
+      "docs/benchmark-results.html: marker-bracketed auto-generated panel"
+    ],
+    "data": [
+      "bench_real/runs/_panel_07b.html"
+    ]
+  },
+  "votes": [
+    {
+      "planner": "Cassia",
+      "decision": "APPROVE",
+      "rationale": "F6은 'judge가 실패해도 데이터 행을 살린다'는 정직한 처리. fallback provenance가 judge_axes에 남아 사후 필터링이 가능하다는 점이 핵심. F5 보류 결정은 R7+R8+R9에서 이미 5/5 벤더 커버가 끝났다는 근거와 quota 위험을 균형있게 반영."
+    },
+    {
+      "planner": "Orion",
+      "decision": "APPROVE",
+      "rationale": "F6 변경은 18줄 미만의 좁은 패치이며 정상 흐름(judge axes 정상)에는 영향이 없음 (pytest 43건 회귀 검증 권장). F7 render 모듈은 docs를 직접 수정하지 않는 read-only 설계로, 사람이 marker 사이를 갱신하는 흐름이 안전."
+    },
+    {
+      "planner": "Gaia",
+      "decision": "APPROVE",
+      "rationale": "F6 발동 시 quality=0.5*tier1+0.5*tier2_fallback=0.5*tier1+0.5*tier1=tier1로 수렴해 'judge 실패가 모델 성능을 잠식하지 않는' 의도가 명확. F7의 marker(`<!-- panel:07b:start/end -->`) 방식은 차후 자동화 진척 시 그대로 활용 가능."
+    }
+  ],
+  "unanimous": true
+}

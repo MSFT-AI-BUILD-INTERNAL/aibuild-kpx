@@ -1,0 +1,28 @@
+{
+  "round": 16,
+  "topic": "bench_real/README inbound link to CONTRIBUTING panel workflow (F19)",
+  "scope": {
+    "code_changes": [],
+    "docs": [
+      "bench_real/README.md: NEW section linking to CONTRIBUTING.md panel workflow + tests/test_render_results_panel.py"
+    ]
+  },
+  "votes": [
+    {
+      "planner": "Cassia",
+      "decision": "APPROVE",
+      "rationale": "R15에서 CONTRIBUTING에 문서화한 워크플로의 발견 가능성을 확보. bench_real 모듈을 보러 온 사용자가 1-hop으로 절차에 도달."
+    },
+    {
+      "planner": "Orion",
+      "decision": "APPROVE",
+      "rationale": "코드/테스트 변경 0, 회귀 영향 없음. anchor 슬러그가 GitHub 규칙과 일치하도록 사전 검증."
+    },
+    {
+      "planner": "Gaia",
+      "decision": "APPROVE",
+      "rationale": "테스트 파일까지 함께 링크해 '문서 → 절차 → 회귀 보호' 경로가 1쪽에서 완결. F5/F12/F15 보류 정책 유지."
+    }
+  ],
+  "unanimous": true
+}

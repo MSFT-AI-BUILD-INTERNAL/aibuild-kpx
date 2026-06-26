@@ -1,0 +1,39 @@
+{
+  "round": 7,
+  "topic": "cross-vendor LLM judge re-evaluation (5 models × V0/V4 × 10 cases × tier2_rate=1.0)",
+  "judge_model": "meta/llama-4-scout-17b-16e-instruct",
+  "main_adapter": "github (GitHub Models, gh auth token)",
+  "scope": {
+    "models": [
+      "openai/gpt-4o-mini",
+      "microsoft/phi-4",
+      "mistral-ai/ministral-3b",
+      "meta/llama-3.3-70b-instruct",
+      "deepseek/deepseek-v3-0324"
+    ],
+    "variants": ["V0", "V4"],
+    "max_cases": 10,
+    "repeats": 1,
+    "tier2_rate": 1.0,
+    "per_model_timeout_s": 1200
+  },
+  "estimated_cost_usd": 0.0,
+  "votes": [
+    {
+      "planner": "Cassia",
+      "decision": "APPROVE",
+      "rationale": "R6 mock judge 한계를 해소하기 위한 정확한 후속 단계. 5종 모델 선택이 벤더/규모 다양성을 반영하며, cross-vendor judge 고정으로 V0/V4 상대 비교의 confounding을 차단. tier2_rate=1.0과 max_cases=10의 조합은 통계적 부담을 시간/quota 예산과 균형 있게 설계."
+    },
+    {
+      "planner": "Orion",
+      "decision": "APPROVE",
+      "rationale": "CLI 확장(--tier2-rate, --variants)이 기존 TIER_* 기본값을 깨지 않는 override 방식이고, 새 드라이버는 subprocess + per-model timeout으로 한 모델의 stall이 나머지를 차단하지 않도록 격리됨. 비용 cap 1e9는 quota-only 환경(GitHub Models)에서 적절."
+    },
+    {
+      "planner": "Gaia",
+      "decision": "APPROVE",
+      "rationale": "Judge 모델을 Meta로 고정해 OpenAI/Meta 출력에 대한 절대 점수 비교는 피하고 V0↔V4의 within-model delta만 해석하는 분석 프레임이 적절. judge_axes JSON 보존으로 사후 재분석 가능. 위험(quota/latency)도 명시되어 있음."
+    }
+  ],
+  "unanimous": true
+}

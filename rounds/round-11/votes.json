@@ -1,0 +1,31 @@
+{
+  "round": 11,
+  "topic": "docs auto-patch + judge-fallback transparency (F8 + F9)",
+  "scope": {
+    "code_changes": [
+      "bench_real/render_results_panel.py: --patch-doc atomic replace between panel:07b markers",
+      "bench_real/render_results_panel.py: aggregate judge_axes.fallback=='rule_based' count per (model, round) and surface as fb=k tag"
+    ],
+    "docs": [
+      "docs/benchmark-results.html: regenerated via --patch-doc (idempotent, same MD5 on rerun)"
+    ]
+  },
+  "votes": [
+    {
+      "planner": "Cassia",
+      "decision": "APPROVE",
+      "rationale": "F8은 marker bracket을 사용한 좁은 patch로, marker 바깥 구조에 영향이 없다. 멱등성 검증(MD5 동일)을 plan/artifact에 포함해 회귀를 사전 차단. F9는 F6 효과를 데이터 표면에 노출시켜 결과의 정직성을 강화."
+    },
+    {
+      "planner": "Orion",
+      "decision": "APPROVE",
+      "rationale": "_patch_doc은 *.tmp + os.replace로 atomic하며 marker 미존재 시 SystemExit으로 안전 실패. F9는 fb>0일 때만 태그를 출력해 정상 케이스의 시각적 노이즈가 없다. CLI 호환성 유지(--patch-doc는 옵션)."
+    },
+    {
+      "planner": "Gaia",
+      "decision": "APPROVE",
+      "rationale": "현재 데이터에 fb=0이지만 코드 경로는 활성화되어 차기 라운드에서 즉시 효과를 본다. patch 후 HTML 균형 유지 + pytest 43 PASS로 안전성 확인. F5 보류 정책 유지."
+    }
+  ],
+  "unanimous": true
+}

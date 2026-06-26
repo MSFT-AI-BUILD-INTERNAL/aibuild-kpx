@@ -1,0 +1,29 @@
+{
+  "round": 12,
+  "topic": "patch safety + marker generalization (F10 + F11)",
+  "scope": {
+    "code_changes": [
+      "bench_real/render_results_panel.py: _markers(panel) helper",
+      "bench_real/render_results_panel.py: _patch_doc(panel, backup) parameterization",
+      "bench_real/render_results_panel.py: CLI --panel / --backup"
+    ]
+  },
+  "votes": [
+    {
+      "planner": "Cassia",
+      "decision": "APPROVE",
+      "rationale": "F10은 patch 직전 .bak을 atomic write 이전 단계에 두어 손상 가능 구간을 최소화. F11은 한 모듈을 다중 패널에 재사용할 수 있게 만들면서도 기본값 '07b'로 R11과 완전 호환. 잘못된 panel id에 대해 SystemExit으로 즉시 실패."
+    },
+    {
+      "planner": "Orion",
+      "decision": "APPROVE",
+      "rationale": "기본 동작(--panel/--backup 미지정) MD5가 R11과 동일(be85f7aa…). --panel nonexistent 시 docs 불변 확인. CLI 변경은 모두 옵션 추가이므로 기존 호출 호환."
+    },
+    {
+      "planner": "Gaia",
+      "decision": "APPROVE",
+      "rationale": "다음 라운드에서 새 패널(p1~p6 view 등)을 marker로 감싸면 동일 도구로 자동화 가능. F10 .bak은 1세대만 유지(덮어쓰기)하여 디스크 누적 없음."
+    }
+  ],
+  "unanimous": true
+}

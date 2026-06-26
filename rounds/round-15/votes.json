@@ -1,0 +1,28 @@
+{
+  "round": 15,
+  "topic": "CONTRIBUTING workflow doc for live-benchmark panel (F18)",
+  "scope": {
+    "code_changes": [],
+    "docs": [
+      "CONTRIBUTING.md: NEW section '> Updating the live-benchmark panel (docs/benchmark-results.html §07b)' covering list-panels / dry-run / backup-apply with notes on diff-out, wrong-panel, F9 fb tag, and pointer to unit tests"
+    ]
+  },
+  "votes": [
+    {
+      "planner": "Cassia",
+      "decision": "APPROVE",
+      "rationale": "4개 라운드 누적 워크플로가 처음으로 문서화. 'preview → apply with backup' 순서가 명시되어 신규 라운드 추가 절차가 결정적. 명령 블록을 그대로 복붙해 실행 가능함을 smoke로 검증."
+    },
+    {
+      "planner": "Orion",
+      "decision": "APPROVE",
+      "rationale": "코드/테스트 변경 0이므로 회귀 영향 없음. CONTRIBUTING은 79줄로 합리적 분량. 신규 라운드 입력 추가법(`r<N>=path` --inputs 추가) 절차가 한 문단으로 압축."
+    },
+    {
+      "planner": "Gaia",
+      "decision": "APPROVE",
+      "rationale": "F9의 fb 태그·F11의 panel id 안전 실패·F13/F16의 dry-run/diff-out 직교성 같은 비자명한 계약을 노트로 노출해 사용자가 '왜 그렇게 동작하는지' 알 수 있다. 테스트 파일 링크로 회귀 보호 위치도 안내."
+    }
+  ],
+  "unanimous": true
+}

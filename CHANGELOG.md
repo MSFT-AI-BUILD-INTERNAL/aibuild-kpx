@@ -4,6 +4,8 @@ All notable changes to kpx are documented here. Format: [Keep a Changelog](https
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-05-25
+
 ### Added
 - **Benchmark traceability metadata** — `bench_real.runner` now accepts
   `--benchmark-version` and `--split`, and writes both fields into each result
@@ -14,6 +16,20 @@ All notable changes to kpx are documented here. Format: [Keep a Changelog](https
 - **Benchmark improvement rounds** — added persisted multi-round benchmark
   review artifacts under `rounds/round-1` through `rounds/round-4` covering
   freshness, judge reliability, coverage expansion, and statistical reporting.
+- **Cross-vendor live API benchmark (R5–R9)** — `bench_real` now ships
+  `lite-judged` tier (always-on LLM judge), backoff cap (`MAX_TOTAL_WAIT_S=60`)
+  in `adapters/github_models.py`, and judge-fallback to rule-based scoring on
+  judge error (provenance preserved in `judge_axes.fallback`). Validated 5
+  vendors (OpenAI, Microsoft, Mistral, Meta, DeepSeek) at V4 with
+  −11% to −17% tok-in savings and Δq within ±1.7.
+- **Marker-bracketed docs panel automation (R10–R16)** — new
+  `bench_real.render_results_panel` module renders the live-API panel in
+  `docs/benchmark-results.html` §07b from per-model JSONLs. Supports
+  `--list-panels`, `--patch-doc`, `--panel`, `--backup`, `--dry-run`,
+  `--diff-out`; idempotent atomic write; F9 `fb=k` tag surfaces
+  `judge_axes.fallback` ratio. Workflow documented in `CONTRIBUTING.md`
+  and `bench_real/README.md`; regression-guarded by 12 unit tests in
+  `tests/test_render_results_panel.py`.
 
 ### Changed
 - **Benchmark docs** — updated `bench_real/README.md` and the top-level README

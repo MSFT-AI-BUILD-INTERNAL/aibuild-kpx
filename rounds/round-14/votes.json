@@ -1,0 +1,29 @@
+{
+  "round": 14,
+  "topic": "diff export + dedicated unit tests (F16 + F17)",
+  "scope": {
+    "code_changes": [
+      "bench_real/render_results_panel.py: _patch_doc(diff_out=...) writes unified diff to file (orthogonal to dry-run)",
+      "bench_real/render_results_panel.py: CLI --diff-out",
+      "tests/test_render_results_panel.py: NEW, 12 cases covering markers/list/patch/backup/dry-run/diff-out/aggregation"
+    ]
+  },
+  "votes": [
+    {
+      "planner": "Cassia",
+      "decision": "APPROVE",
+      "rationale": "F17이 4개 라운드(R10~R13) 누적 기능을 처음으로 회귀 보호한다. fragment가 marker를 포함해야 한다는 실제 계약(_render 출력 형식)을 테스트에 코드화한 점이 핵심. 초기 작성 시 이 계약을 놓쳐 2건 실패했으나 즉시 수정해 명시화."
+    },
+    {
+      "planner": "Orion",
+      "decision": "APPROVE",
+      "rationale": "F16은 dry-run과 직교 설계: --diff-out 단독 시에도 patch 실행 + diff 기록 가능. CLI 변경은 옵션 추가뿐이므로 기존 호출 호환. wrong-panel/no-change 등 엣지 경로가 테스트로 잠금됨."
+    },
+    {
+      "planner": "Gaia",
+      "decision": "APPROVE",
+      "rationale": "F15 보류 사유(실제 두 번째 패널 부재)가 정직. F9 fb 카운트가 테스트로 검증되어 차기 라운드에서 fallback 발생 시 자동 노출이 보장된다. capsys로 stdout 메시지까지 검증."
+    }
+  ],
+  "unanimous": true
+}

@@ -1,0 +1,35 @@
+{
+  "round": 9,
+  "topic": "Hardening (F2/F3) + DeepSeek-v3 retry (F1-1) + benchmark-results.html update (F4)",
+  "scope": {
+    "code_changes": [
+      "bench_real/adapters/github_models.py: MAX_TOTAL_WAIT_S=60s cumulative cap",
+      "bench_real/runner.py: lite-judged tier added to choices + TIER_*",
+      "bench_real/tasks/__init__.py: lite-judged TIER_BUDGET mirror of lite"
+    ],
+    "data_runs": [
+      "bench_real/runs/lite-r9-deepseek/ — deepseek-v3 × V0/V4 × 10 cases × judge=llama-4-scout"
+    ],
+    "docs": [
+      "docs/benchmark-results.html: new section 07b live API benchmark (R6/R7/R8/R9)"
+    ]
+  },
+  "votes": [
+    {
+      "planner": "Cassia",
+      "decision": "APPROVE",
+      "rationale": "4개 후속 항목을 한 라운드에 묶는 것이 합당. F2/F3는 backward-compatible (기본 동작 변경 없음). F1-1은 R7 원본 judge로 실행해 R7+R8+R9 통합 표 정합성 유지. F4는 새 섹션 삽입 방식으로 기존 R5 결과 보존."
+    },
+    {
+      "planner": "Orion",
+      "decision": "APPROVE",
+      "rationale": "F2 cap 60s는 단일 retryable 호출의 최대 wall-clock을 (180s socket + 60s backoff) = 240s로 제한해 worst-case 분석 가능. F3 lite-judged tier 추가는 TIER_* dict 4개 모두에 일관 추가. pytest 회귀 없음 검증 권장."
+    },
+    {
+      "planner": "Gaia",
+      "decision": "APPROVE",
+      "rationale": "DeepSeek 결과를 R7 표에 자연스럽게 합치는 분석 프레임이 적절. F4 문서 갱신이 raw 데이터 경로(rounds/, bench_real/runs/)를 모두 명시해 reproducibility 확보. HTML 태그 균형 검증을 합의 게이트에 포함."
+    }
+  ],
+  "unanimous": true
+}

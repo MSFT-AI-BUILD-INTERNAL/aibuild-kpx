@@ -1,0 +1,12 @@
+{
+  "round": 18,
+  "scope": ["F21"],
+  "deferred": ["F5"],
+  "votes": {
+    "cassia": {"verdict": "APPROVE", "reason": "Deterministic, reversible CHANGELOG header transition. R17 [Unreleased] entries graduate to [0.3.0]."},
+    "orion":  {"verdict": "APPROVE", "reason": "Version 0.3.0 and date 2026-05-25 implied by user's option-2 selection on current date."},
+    "gaia":   {"verdict": "APPROVE", "reason": "Zero regression risk; new empty [Unreleased] preserved for next cycle."}
+  },
+  "unanimous": true,
+  "blocker_for_f5": "GITHUB_TOKEN not set in environment; live API call refused to avoid synthesized results."
+}

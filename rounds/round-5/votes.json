@@ -1,0 +1,28 @@
+{
+  "round": 5,
+  "topic": "New-model refresh of full benchmark suite",
+  "votes": [
+    {
+      "planner": "Cassia",
+      "initial": "C",
+      "model": "Claude Opus 4.7",
+      "decision": "APPROVE",
+      "rationale": "변경 표면이 데이터 추가(2 모델) + 1줄 버그 수정으로 최소. 가격은 estimate 라벨과 pricing_date 버전화로 재현성 확보."
+    },
+    {
+      "planner": "Orion",
+      "initial": "O",
+      "model": "GPT 5.5",
+      "decision": "APPROVE",
+      "rationale": "라이브 API 호출 제외 → 비용 0. mock adapter 와 offline tokenizer 만 사용해 안전."
+    },
+    {
+      "planner": "Gaia",
+      "initial": "G",
+      "model": "Gemini 3.1 Pro",
+      "decision": "APPROVE",
+      "rationale": "기존 lite-final.jsonl / legacy 결과 보존, pricing_date 갱신으로 과거 결과 직접비교 방지 (Round 4 권고 #3 부합)."
+    }
+  ],
+  "unanimous_approve": true
+}

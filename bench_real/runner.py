@@ -26,12 +26,14 @@ from .variants import apply_variant, VARIANTS, LITE_VARIANTS
 
 
 TIER_VARIANTS = {
-    "lite":     LITE_VARIANTS,                       # V0, V3, V4
-    "standard": VARIANTS,                            # V0..V5
-    "deep":     VARIANTS,                            # V0..V5
+    "lite":        LITE_VARIANTS,                    # V0, V3, V4
+    "lite-judged": LITE_VARIANTS,                    # V0, V3, V4 + judge on every cell
+    "standard":    VARIANTS,                         # V0..V5
+    "deep":        VARIANTS,                         # V0..V5
 }
-TIER_REPEATS = {"lite": 1, "standard": 3, "deep": 5}
-TIER_TIER2_RATE = {"lite": 0.0, "standard": 0.20, "deep": 0.20}
+TIER_REPEATS = {"lite": 1, "lite-judged": 1, "standard": 3, "deep": 5}
+TIER_TIER2_RATE = {"lite": 0.0, "lite-judged": 1.0,
+                   "standard": 0.20, "deep": 0.20}
 
 
 def _existing_keys(out_path: Path) -> set[tuple]:
@@ -54,8 +56,12 @@ def _existing_keys(out_path: Path) -> set[tuple]:
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="bench_real.runner")
-    ap.add_argument("--tier", choices=["lite", "standard", "deep"], default="lite")
-    ap.add_argument("--adapter", choices=["mock", "openai", "anthropic"], default="mock")
+    ap.add_argument("--tier",
+                    choices=["lite", "lite-judged", "standard", "deep"],
+                    default="lite")
+    ap.add_argument("--adapter",
+                    choices=["mock", "openai", "anthropic", "google", "github"],
+                    default="mock")
     ap.add_argument("--model", default=None)
     ap.add_argument("--judge-adapter", default="mock",
                     help="adapter for tier-2 LLM judge (cross-vendor in real runs)")
@@ -72,6 +78,10 @@ def main(argv=None) -> int:
                     help="benchmark dataset/version label for traceability")
     ap.add_argument("--split", default="public",
                     help="dataset split label (e.g., public|private-holdout)")
+    ap.add_argument("--tier2-rate", type=float, default=None,
+                    help="override tier-2 LLM-judge sampling rate (0.0-1.0)")
+    ap.add_argument("--variants", default=None,
+                    help="comma-separated subset of variants (e.g., V0,V4)")
     args = ap.parse_args(argv)
 
     random.seed(args.seed)
@@ -87,8 +97,12 @@ def main(argv=None) -> int:
     if args.max_cases:
         cases = cases[:args.max_cases]
     variants = TIER_VARIANTS[args.tier]
+    if args.variants:
+        wanted = [v.strip() for v in args.variants.split(",") if v.strip()]
+        variants = [v for v in variants if v in wanted] or wanted
     repeats = TIER_REPEATS[args.tier]
-    tier2_rate = TIER_TIER2_RATE[args.tier]
+    tier2_rate = (args.tier2_rate if args.tier2_rate is not None
+                  else TIER_TIER2_RATE[args.tier])
 
     adapter = get_adapter(args.adapter, model=args.model)
     judge = get_adapter(args.judge_adapter, model=args.judge_model)
@@ -99,7 +113,7 @@ def main(argv=None) -> int:
     print(f"[runner] tier={args.tier} cases={len(cases)} variants={variants} "
           f"repeats={repeats} total_cells={total_cells} adapter={args.adapter} "
           f"model={adapter.model} cap=${args.cap_usd:.2f}")
-        print(f"[runner] benchmark_version={args.benchmark_version} split={args.split}")
+    print(f"[runner] benchmark_version={args.benchmark_version} split={args.split}")
     print(f"[runner] writing → {out_path}")
     if seen:
         print(f"[runner] resuming, {len(seen)} cells already in {out_path.name}")
@@ -148,6 +162,16 @@ def main(argv=None) -> int:
                             judge, system=case.system, user=case.user,
                             response=res.text,
                         )
+                        # F6: when judge fails (transient error, unparseable
+                        # output), fall back to rule-based tier2 so the row is
+                        # not penalized by a tier2=0 artifact. Provenance is
+                        # recorded in judge_axes for traceability.
+                        if axes is not None and "error" in axes:
+                            fb_score, _ = score_rule_based(res.text, case.expected)
+                            axes = {"fallback": "rule_based",
+                                    "judge_error": axes.get("error"),
+                                    "rule_based_score": fb_score}
+                            tier2 = fb_score
 
                     quality = tier1 if tier2 is None else 0.5 * tier1 + 0.5 * tier2
 

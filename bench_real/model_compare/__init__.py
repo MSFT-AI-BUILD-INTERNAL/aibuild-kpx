@@ -73,7 +73,10 @@ class ModelSpec:
     model: str
     counter: Callable[[str], int]
     tokenizer_kind: str        # "exact" | "heuristic"
-    usd_per_1m_input: float    # 2026-04 list price
+    usd_per_1m_input: float    # 2026-05 list price (see PRICING_DATE)
+
+
+PRICING_DATE = "2026-05"
 
 
 MODELS: list[ModelSpec] = [
@@ -82,6 +85,7 @@ MODELS: list[ModelSpec] = [
     ModelSpec("openai", "gpt-4o",      count_openai, "exact", 2.50),
     ModelSpec("openai", "gpt-5-mini",  count_openai, "exact", 0.25),
     ModelSpec("openai", "gpt-5.4",     count_openai, "exact", 5.00),
+    ModelSpec("openai", "gpt-5.5",     count_openai, "exact", 10.00),   # new (2026-05)
     # Anthropic
     ModelSpec("anthropic", "claude-haiku-4.5",  count_anthropic, "heuristic", 1.00),
     ModelSpec("anthropic", "claude-sonnet-4.7", count_anthropic, "heuristic", 3.00),
@@ -90,6 +94,7 @@ MODELS: list[ModelSpec] = [
     ModelSpec("google", "gemini-1.5-flash", count_gemini, "heuristic", 0.075),
     ModelSpec("google", "gemini-1.5-pro",   count_gemini, "heuristic", 1.25),
     ModelSpec("google", "gemini-2.5-pro",   count_gemini, "heuristic", 2.50),
+    ModelSpec("google", "gemini-3.1-pro",   count_gemini, "heuristic", 3.50),  # new (2026-05)
 ]
 
 
@@ -247,7 +252,7 @@ def run() -> dict:
             "n_variants": len(VARIANT_METHODS),
             "n_cells": len(cells),
             "tiktoken_available": _TIK is not None,
-            "pricing_date": "2026-04",
+            "pricing_date": PRICING_DATE,
             "pricing_unit": "USD per 1M input tokens (list price)",
             "tokenizer_notes": {
                 "openai": "exact via tiktoken o200k_base"

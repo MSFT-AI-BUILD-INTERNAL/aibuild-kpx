@@ -138,6 +138,15 @@ continue from the next free cell.
 - `temperature=0.0` for both target and judge adapters.
 - `--run-id <name>` makes resume-able runs (`runs/<tier>-<run-id>.jsonl`).
 
+## Updating `docs/benchmark-results.html` §07b (live API panel)
+
+Per-model JSONLs under `bench_real/runs/lite-r*-*/` feed the marker-bracketed
+panel in section 07b of `docs/benchmark-results.html`. The workflow
+(`--list-panels` → `--dry-run` preview → `--backup` apply, plus notes on
+`--diff-out`, panel-id safety, F9 `fb=k` tag, and determinism) is documented
+in [`../CONTRIBUTING.md` ▶ Updating the live-benchmark panel](../CONTRIBUTING.md#updating-the-live-benchmark-panel-docsbenchmark-resultshtml-07b).
+Regression-guarded by [`../tests/test_render_results_panel.py`](../tests/test_render_results_panel.py).
+
 ## Legacy v0.2.0 self-QA suite
 
 The previous zero-dependency 300-round campaign (30 prompts × 10 transforms,

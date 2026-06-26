@@ -43,4 +43,7 @@ def get_adapter(name: str, model: str | None = None) -> Adapter:
     if name in ("google", "gemini"):
         from .google import GoogleAdapter
         return GoogleAdapter(model=model or "gemini-1.5-flash")
+    if name in ("github", "github_models"):
+        from .github_models import GithubModelsAdapter
+        return GithubModelsAdapter(model=model or "openai/gpt-4o-mini")
     raise ValueError(f"unknown adapter: {name}")
