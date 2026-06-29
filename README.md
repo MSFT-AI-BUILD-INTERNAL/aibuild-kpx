@@ -36,6 +36,29 @@ Top-line takeaway from Track D (model_compare, 450 cells, monthly cost @ 1 M req
 
 Reproduce: `python -m bench_real.runner --track model_compare`
 
+### 토큰 소비를 어떻게 측정했나
+
+벤치마크의 모든 셀은 **변형(variant)별 입력 프롬프트**(V0 원본 vs V3/V4/V5 kpx 압축본)를
+동일한 케이스에 적용한 뒤, 세 가지 경로로 토큰을 동시에 기록합니다
+([bench_real/runner.py](bench_real/runner.py), [bench_real/schema.py](bench_real/schema.py)):
+
+| 필드 | 출처 | 용도 |
+|---|---|---|
+| `tokens_in_kpx` | kpx 휴리스틱 ([kpx/tokens.py](kpx/tokens.py) `estimate_tokens`) | 의존성 없는 기본 카운트. 영어 ≈ 4자/토큰, CJK ≈ 1자/토큰 |
+| `tokens_in_tiktoken` | OpenAI `tiktoken` (`o200k_base` / `cl100k_base`) | 설치 시 OpenAI 계열 정확 카운트, 휴리스틱 검증용 |
+| `tokens_in_api` / `tokens_out_api` / `tokens_total_api` | 실제 API 응답의 `usage` (prompt/completion/total) | **소비량의 정답값(ground truth)** |
+
+- **절감률**은 같은 케이스의 V0 대비 압축 변형의 입력 토큰 감소분으로 계산합니다.
+  `tokens_in_kpx`를 1차 지표로 쓰되, OpenAI 모델은 `tokens_in_tiktoken`과
+  실제 `usage`로 교차 검증합니다(보고서의 "byte-exact"/가중 절감률).
+- **비용**은 입·출력 토큰에 모델별 단가를 곱해 셀마다 `cost_usd`로 적립하고,
+  전체 실행은 `CostCap` 상한으로 차단합니다
+  ([bench_real/cost_cap.py](bench_real/cost_cap.py) `estimate_cost`).
+- 휴리스틱 카운터는 하네스의 컨텍스트-50% 분할 규칙과 동일한 식을 공유하므로,
+  감사(`kpx audit`)와 벤치마크가 같은 토큰 기준을 사용합니다.
+
+CLI에서 단일 프롬프트의 토큰을 직접 확인하려면 `kpx budget prompt.md --window 200000`.
+
 ---
 
 ## Why kpx vs rtk?
